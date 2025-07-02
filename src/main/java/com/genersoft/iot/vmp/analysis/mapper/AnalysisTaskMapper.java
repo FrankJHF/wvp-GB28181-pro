@@ -33,6 +33,14 @@ public interface AnalysisTaskMapper {
     int deleteByTaskId(@Param("taskId") String taskId);
 
     /**
+     * 根据主键ID删除任务
+     *
+     * @param id 主键ID
+     * @return 影响行数
+     */
+    int deleteById(@Param("id") Integer id);
+
+    /**
      * 更新任务信息
      *
      * @param task 任务信息
@@ -59,6 +67,14 @@ public interface AnalysisTaskMapper {
      * @return 任务信息
      */
     AnalysisTask selectByTaskId(@Param("taskId") String taskId);
+
+    /**
+     * 根据主键ID查询任务
+     *
+     * @param id 主键ID
+     * @return 任务信息
+     */
+    AnalysisTask selectById(@Param("id") Integer id);
 
     /**
      * 查询所有任务列表
@@ -144,9 +160,7 @@ public interface AnalysisTaskMapper {
     }
 
     default AnalysisTask selectTaskById(Integer id) {
-        // 注意：这里需要通过ID查询，但接口中只有通过taskId查询的方法
-        // 暂时返回null，需要修复Service实现或添加新的查询方法
-        return null;
+        return selectById(id);
     }
 
     default AnalysisTask selectTaskById(String taskId) {
@@ -158,9 +172,7 @@ public interface AnalysisTaskMapper {
     }
 
     default int deleteTask(Integer id) {
-        // 注意：这里需要通过ID删除，但接口中只有通过taskId删除的方法
-        // 暂时返回0，需要修复Service实现或添加新的删除方法
-        return 0;
+        return deleteById(id);
     }
 
     default int deleteTask(String taskId) {

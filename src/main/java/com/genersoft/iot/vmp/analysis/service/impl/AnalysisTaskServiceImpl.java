@@ -64,9 +64,20 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
         // 3. 创建任务实体
         AnalysisTask task = new AnalysisTask();
+
+        // 生成UUID作为taskId
+        task.setTaskId(java.util.UUID.randomUUID().toString());
         task.setTaskName(request.getTaskName());
         task.setDeviceId(request.getDeviceId());
         task.setChannelId(request.getChannelId());
+
+        // 获取通道名称
+        String channelName = getChannelName(request.getDeviceId(), request.getChannelId());
+        if (channelName == null || channelName.trim().isEmpty()) {
+            channelName = "通道-" + request.getChannelId(); // 默认名称
+        }
+        task.setChannelName(channelName);
+
         task.setAnalysisQuestion(request.getAnalysisQuestion());
         task.setAnalysisInterval(request.getAnalysisInterval());
         task.setTaskDescription(request.getTaskDescription());
@@ -82,21 +93,38 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
             throw new RuntimeException("创建任务失败");
         }
 
+        logger.info("任务保存成功，主键ID: {}, taskId: {}", task.getId(), task.getTaskId());
+
         // 5. 如果需要自动启动，则启动任务
         if (Boolean.TRUE.equals(request.getAutoStart())) {
-            startTask(task.getId());
+            startTask(task.getTaskId());
         }
 
         logger.info("成功创建分析任务，ID: {}", task.getId());
         return task.getId();
     }
 
+    /**
+     * 获取通道名称
+     */
+    private String getChannelName(String deviceId, String channelId) {
+        try {
+            DeviceChannel channel = deviceChannelService.getOne(deviceId, channelId);
+            if (channel != null && channel.getName() != null) {
+                return channel.getName();
+            }
+        } catch (Exception e) {
+            logger.warn("获取通道名称失败: deviceId={}, channelId={}", deviceId, channelId, e);
+        }
+        return null;
+    }
+
     @Override
     @Transactional
-    public boolean updateTask(Integer taskId, TaskUpdateRequest request) {
+    public boolean updateTask(String taskId, TaskUpdateRequest request) {
         logger.info("更新分析任务 {}: {}", taskId, request);
 
-        AnalysisTask existingTask = taskMapper.selectTaskById(taskId);
+        AnalysisTask existingTask = taskMapper.selectByTaskId(taskId);
         if (existingTask == null) {
             throw new RuntimeException("任务不存在");
         }
@@ -108,7 +136,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
         // 更新任务信息
         AnalysisTask updateTask = new AnalysisTask();
-        updateTask.setId(taskId);
+        updateTask.setTaskId(taskId);
         updateTask.setUpdateTime(dateFormat.format(new Date()));
 
         if (StringUtils.hasText(request.getTaskName())) {
@@ -134,10 +162,10 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
     @Override
     @Transactional
-    public boolean deleteTask(Integer taskId) {
+    public boolean deleteTask(String taskId) {
         logger.info("删除分析任务: {}", taskId);
 
-        AnalysisTask task = taskMapper.selectTaskById(taskId);
+        AnalysisTask task = taskMapper.selectByTaskId(taskId);
         if (task == null) {
             throw new RuntimeException("任务不存在");
         }
@@ -147,7 +175,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
             stopTask(taskId);
         }
 
-        int result = taskMapper.deleteTask(taskId);
+        int result = taskMapper.deleteByTaskId(taskId);
         if (result > 0) {
             logger.info("成功删除分析任务: {}", taskId);
             return true;
@@ -157,10 +185,10 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
     @Override
     @Transactional
-    public boolean startTask(Integer taskId) {
+    public boolean startTask(String taskId) {
         logger.info("启动分析任务: {}", taskId);
 
-        AnalysisTask task = taskMapper.selectTaskById(taskId);
+        AnalysisTask task = taskMapper.selectByTaskId(taskId);
         if (task == null) {
             throw new RuntimeException("任务不存在");
         }
@@ -184,7 +212,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
             // 更新任务状态
             AnalysisTask updateTask = new AnalysisTask();
-            updateTask.setId(taskId);
+            updateTask.setTaskId(taskId);
             updateTask.setTaskStatus("RUNNING");
             updateTask.setStartTime(dateFormat.format(new Date()));
             updateTask.setUpdateTime(dateFormat.format(new Date()));
@@ -204,10 +232,10 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
     @Override
     @Transactional
-    public boolean stopTask(Integer taskId) {
+    public boolean stopTask(String taskId) {
         logger.info("停止分析任务: {}", taskId);
 
-        AnalysisTask task = taskMapper.selectTaskById(taskId);
+        AnalysisTask task = taskMapper.selectByTaskId(taskId);
         if (task == null) {
             throw new RuntimeException("任务不存在");
         }
@@ -226,7 +254,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
             // 更新任务状态
             AnalysisTask updateTask = new AnalysisTask();
-            updateTask.setId(taskId);
+            updateTask.setTaskId(taskId);
             updateTask.setTaskStatus("STOPPED");
             updateTask.setStopTime(dateFormat.format(new Date()));
             updateTask.setUpdateTime(dateFormat.format(new Date()));
@@ -245,8 +273,13 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
     }
 
     @Override
-    public AnalysisTask getTask(Integer taskId) {
-        return taskMapper.selectTaskById(taskId);
+    public AnalysisTask getTask(String taskId) {
+        return taskMapper.selectByTaskId(taskId);
+    }
+
+    @Override
+    public AnalysisTask getTaskById(Integer id) {
+        return taskMapper.selectById(id);
     }
 
     @Override

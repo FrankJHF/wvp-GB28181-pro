@@ -65,7 +65,7 @@ public class AnalysisResultServiceImpl implements IAnalysisResultService {
         try {
             // 构建分析结果实体
             AnalysisResult analysisResult = new AnalysisResult();
-            analysisResult.setTaskId(String.valueOf(callbackRequest.getTaskId()));
+            analysisResult.setTaskId(callbackRequest.getTaskId()); // 直接使用String类型的taskId
             analysisResult.setResultTimestamp(callbackRequest.getResultTimestamp());
             analysisResult.setAnalysisAnswer(callbackRequest.getAnalysisAnswer());
             analysisResult.setConfidenceScore(callbackRequest.getConfidenceScore());

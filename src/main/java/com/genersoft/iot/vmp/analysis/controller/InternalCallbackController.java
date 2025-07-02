@@ -94,7 +94,7 @@ public class InternalCallbackController {
      */
     @PostMapping("/error")
     public WVPResult<Boolean> reportError(
-            @RequestParam Integer taskId,
+            @RequestParam String taskId,
             @RequestParam String errorMessage,
             @RequestBody(required = false) String errorDetails) {
         try {
@@ -122,7 +122,7 @@ public class InternalCallbackController {
      */
     @PostMapping("/status")
     public WVPResult<Boolean> updateTaskStatus(
-            @RequestParam Integer taskId,
+            @RequestParam String taskId,
             @RequestParam String status,
             @RequestBody(required = false) String statusDetails) {
         try {

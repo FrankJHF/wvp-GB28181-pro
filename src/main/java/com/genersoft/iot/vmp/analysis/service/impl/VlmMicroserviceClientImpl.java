@@ -2,9 +2,11 @@ package com.genersoft.iot.vmp.analysis.service.impl;
 
 import com.genersoft.iot.vmp.analysis.entity.AnalysisTask;
 import com.genersoft.iot.vmp.analysis.service.IVlmMicroserviceClient;
+import com.genersoft.iot.vmp.analysis.mapper.AnalysisTaskMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,9 @@ import java.util.concurrent.TimeUnit;
 public class VlmMicroserviceClientImpl implements IVlmMicroserviceClient {
 
     private static final Logger logger = LoggerFactory.getLogger(VlmMicroserviceClientImpl.class);
+
+    @Autowired
+    private AnalysisTaskMapper taskMapper;
 
     @Value("${vlm.microservice.url:http://localhost:8000}")
     private String vlmServiceUrl;
@@ -58,35 +63,21 @@ public class VlmMicroserviceClientImpl implements IVlmMicroserviceClient {
                 task.getId(), task.getDeviceId(), task.getChannelId());
 
         try {
-            // 构建请求参数
+            // 构建符合VLM微服务API的请求参数
             Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("task_id", task.getId());
+            requestBody.put("task_id", task.getTaskId()); // 使用UUID字符串，而不是主键ID
+            // VLM微服务将从WVP获取RTSP URL，传递设备和通道信息
+            requestBody.put("rtsp_url", "");
             requestBody.put("device_id", task.getDeviceId());
             requestBody.put("channel_id", task.getChannelId());
-            requestBody.put("analysis_question", task.getAnalysisQuestion());
-            requestBody.put("analysis_interval", task.getAnalysisInterval());
-            requestBody.put("task_name", task.getTaskName());
+            requestBody.put("vlm_question", task.getAnalysisQuestion());
+            requestBody.put("clip_duration", task.getAnalysisInterval());
 
-            // 发送启动请求
-            String url = vlmServiceUrl + "/start_analysis";
+            // 使用VLM微服务的实际API端点
+            String url = vlmServiceUrl + "/tasks/start";
             ResponseEntity<Map> response = sendRequestWithRetry(url, HttpMethod.POST, requestBody, Map.class);
 
-            if (response.getStatusCode() == HttpStatus.OK) {
-                Map<String, Object> responseBody = response.getBody();
-                Boolean success = (Boolean) responseBody.get("success");
-
-                if (Boolean.TRUE.equals(success)) {
-                    logger.info("成功启动VLM分析任务: taskId={}", task.getId());
-                    return true;
-                } else {
-                    String message = (String) responseBody.get("message");
-                    logger.error("VLM微服务启动任务失败: taskId={}, message={}", task.getId(), message);
-                    return false;
-                }
-            } else {
-                logger.error("VLM微服务返回非200状态码: {}", response.getStatusCode());
-                return false;
-            }
+            return handleStandardResponse(response, task.getId(), "启动");
 
         } catch (Exception e) {
             logger.error("启动VLM分析任务异常: taskId={}", task.getId(), e);
@@ -95,34 +86,15 @@ public class VlmMicroserviceClientImpl implements IVlmMicroserviceClient {
     }
 
     @Override
-    public boolean stopAnalysisTask(Integer taskId) {
+    public boolean stopAnalysisTask(String taskId) {
         logger.info("停止VLM分析任务: taskId={}", taskId);
 
         try {
-            // 构建请求参数
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("task_id", taskId);
+            // 直接使用UUID格式的taskId
+            String url = vlmServiceUrl + "/tasks/" + taskId + "/stop";
+            ResponseEntity<Map> response = sendRequestWithRetry(url, HttpMethod.POST, null, Map.class);
 
-            // 发送停止请求
-            String url = vlmServiceUrl + "/stop_analysis";
-            ResponseEntity<Map> response = sendRequestWithRetry(url, HttpMethod.POST, requestBody, Map.class);
-
-            if (response.getStatusCode() == HttpStatus.OK) {
-                Map<String, Object> responseBody = response.getBody();
-                Boolean success = (Boolean) responseBody.get("success");
-
-                if (Boolean.TRUE.equals(success)) {
-                    logger.info("成功停止VLM分析任务: taskId={}", taskId);
-                    return true;
-                } else {
-                    String message = (String) responseBody.get("message");
-                    logger.error("VLM微服务停止任务失败: taskId={}, message={}", taskId, message);
-                    return false;
-                }
-            } else {
-                logger.error("VLM微服务返回非200状态码: {}", response.getStatusCode());
-                return false;
-            }
+            return handleStandardResponse(response, taskId, "停止");
 
         } catch (Exception e) {
             logger.error("停止VLM分析任务异常: taskId={}", taskId, e);
@@ -134,7 +106,8 @@ public class VlmMicroserviceClientImpl implements IVlmMicroserviceClient {
         logger.debug("检查VLM微服务健康状态");
 
         try {
-            String url = vlmServiceUrl + "/health";
+            // 使用VLM微服务的健康检查端点
+            String url = vlmServiceUrl + "/health/";
             ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
@@ -182,9 +155,16 @@ public class VlmMicroserviceClientImpl implements IVlmMicroserviceClient {
                 taskId, analysisQuestion, analysisInterval);
 
         try {
+            // 先获取任务的完整信息以获取UUID格式的task_id
+            AnalysisTask task = taskMapper.selectTaskById(taskId);
+            if (task == null) {
+                logger.error("任务不存在: taskId={}", taskId);
+                return false;
+            }
+
             // 构建请求参数
             Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("task_id", taskId);
+            requestBody.put("task_id", task.getTaskId()); // 使用UUID格式的task_id
             requestBody.put("analysis_question", analysisQuestion);
             requestBody.put("analysis_interval", analysisInterval);
 
@@ -216,11 +196,12 @@ public class VlmMicroserviceClientImpl implements IVlmMicroserviceClient {
     }
 
     @Override
-    public Map<String, Object> getTaskStatus(Integer taskId) {
+    public Map<String, Object> getTaskStatus(String taskId) {
         logger.debug("获取VLM任务状态: taskId={}", taskId);
 
         try {
-            String url = vlmServiceUrl + "/task_status?task_id=" + taskId;
+            // 直接使用UUID格式的taskId
+            String url = vlmServiceUrl + "/tasks/" + taskId + "/status";
             ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
@@ -349,6 +330,32 @@ public class VlmMicroserviceClientImpl implements IVlmMicroserviceClient {
         } catch (Exception e) {
             logger.error("获取VLM微服务系统资源异常", e);
             return new HashMap<>();
+        }
+    }
+
+    /**
+     * 通用的标准响应处理方法
+     * @param response HTTP响应
+     * @param taskId 任务ID
+     * @param operation 操作名称
+     * @return 操作是否成功
+     */
+    private boolean handleStandardResponse(ResponseEntity<Map> response, Object taskId, String operation) {
+        if (response.getStatusCode() == HttpStatus.OK) {
+            Map<String, Object> responseBody = response.getBody();
+            Boolean success = (Boolean) responseBody.get("success");
+
+            if (Boolean.TRUE.equals(success)) {
+                logger.info("成功{}VLM分析任务: taskId={}", operation, taskId);
+                return true;
+            } else {
+                String message = (String) responseBody.get("message");
+                logger.error("VLM微服务{}任务失败: taskId={}, message={}", operation, taskId, message);
+                return false;
+            }
+        } else {
+            logger.error("VLM微服务{}任务返回非200状态码: taskId={}, status={}", operation, taskId, response.getStatusCode());
+            return false;
         }
     }
 }

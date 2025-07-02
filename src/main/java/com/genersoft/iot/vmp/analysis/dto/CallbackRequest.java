@@ -9,10 +9,10 @@ import javax.validation.constraints.NotBlank;
 public class CallbackRequest {
 
     /**
-     * 任务ID
+     * 任务ID (UUID字符串格式)
      */
-    @NotNull(message = "任务ID不能为空")
-    private Integer taskId;
+    @NotBlank(message = "任务ID不能为空")
+    private String taskId;
 
     /**
      * 设备ID
@@ -76,7 +76,7 @@ public class CallbackRequest {
 
     public CallbackRequest() {}
 
-    public CallbackRequest(Integer taskId, String deviceId, String channelId,
+    public CallbackRequest(String taskId, String deviceId, String channelId,
                          String question, String answer, String resultTimestamp) {
         this.taskId = taskId;
         this.deviceId = deviceId;
@@ -87,11 +87,11 @@ public class CallbackRequest {
     }
 
     // Getters and Setters
-    public Integer getTaskId() {
+    public String getTaskId() {
         return taskId;
     }
 
-    public void setTaskId(Integer taskId) {
+    public void setTaskId(String taskId) {
         this.taskId = taskId;
     }
 

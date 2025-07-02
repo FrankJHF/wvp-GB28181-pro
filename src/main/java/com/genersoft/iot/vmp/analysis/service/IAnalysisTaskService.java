@@ -22,39 +22,46 @@ public interface IAnalysisTaskService {
 
     /**
      * 更新分析任务
-     * @param taskId 任务ID
+     * @param taskId 任务ID (UUID字符串)
      * @param request 更新请求
      * @return 是否成功
      */
-    boolean updateTask(Integer taskId, TaskUpdateRequest request);
+    boolean updateTask(String taskId, TaskUpdateRequest request);
 
     /**
      * 删除分析任务
-     * @param taskId 任务ID
+     * @param taskId 任务ID (UUID字符串)
      * @return 是否成功
      */
-    boolean deleteTask(Integer taskId);
+    boolean deleteTask(String taskId);
 
     /**
      * 启动分析任务
-     * @param taskId 任务ID
+     * @param taskId 任务ID (UUID字符串)
      * @return 是否成功
      */
-    boolean startTask(Integer taskId);
+    boolean startTask(String taskId);
 
     /**
      * 停止分析任务
-     * @param taskId 任务ID
+     * @param taskId 任务ID (UUID字符串)
      * @return 是否成功
      */
-    boolean stopTask(Integer taskId);
+    boolean stopTask(String taskId);
 
     /**
      * 获取任务详情
-     * @param taskId 任务ID
+     * @param taskId 任务ID (UUID字符串)
      * @return 任务信息
      */
-    AnalysisTask getTask(Integer taskId);
+    AnalysisTask getTask(String taskId);
+
+    /**
+     * 通过主键ID获取任务详情 (内部使用)
+     * @param id 数据库主键ID
+     * @return 任务信息
+     */
+    AnalysisTask getTaskById(Integer id);
 
     /**
      * 获取任务列表（分页）

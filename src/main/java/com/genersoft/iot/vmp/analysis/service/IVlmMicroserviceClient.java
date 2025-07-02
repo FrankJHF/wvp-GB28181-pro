@@ -18,10 +18,10 @@ public interface IVlmMicroserviceClient {
 
     /**
      * 停止分析任务
-     * @param taskId 任务ID
+     * @param taskId 任务ID (UUID字符串)
      * @return 是否成功
      */
-    boolean stopAnalysisTask(Integer taskId);
+    boolean stopAnalysisTask(String taskId);
 
     /**
      * 获取微服务状态
@@ -37,10 +37,10 @@ public interface IVlmMicroserviceClient {
 
     /**
      * 获取任务状态
-     * @param taskId 任务ID
+     * @param taskId 任务ID (UUID字符串)
      * @return 任务状态信息
      */
-    Map<String, Object> getTaskStatus(Integer taskId);
+    Map<String, Object> getTaskStatus(String taskId);
 
     /**
      * 更新任务配置

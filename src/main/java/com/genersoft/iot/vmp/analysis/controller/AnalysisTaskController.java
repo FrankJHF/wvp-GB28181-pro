@@ -63,7 +63,7 @@ public class AnalysisTaskController {
      * 获取任务详情
      */
     @GetMapping("/{taskId}")
-    public WVPResult<AnalysisTask> getTask(@PathVariable Integer taskId) {
+    public WVPResult<AnalysisTask> getTask(@PathVariable String taskId) {
         try {
             logger.info("获取任务详情: {}", taskId);
             AnalysisTask task = analysisTaskService.getTask(taskId);
@@ -82,7 +82,7 @@ public class AnalysisTaskController {
      */
     @PutMapping("/{taskId}")
     public WVPResult<Boolean> updateTask(
-            @PathVariable Integer taskId,
+            @PathVariable String taskId,
             @Valid @RequestBody TaskUpdateRequest request) {
         try {
             logger.info("更新任务配置: taskId={}, request={}", taskId, request);
@@ -98,7 +98,7 @@ public class AnalysisTaskController {
      * 启动任务
      */
     @PostMapping("/{taskId}/start")
-    public WVPResult<Boolean> startTask(@PathVariable Integer taskId) {
+    public WVPResult<Boolean> startTask(@PathVariable String taskId) {
         try {
             logger.info("启动分析任务: {}", taskId);
             boolean result = analysisTaskService.startTask(taskId);
@@ -113,7 +113,7 @@ public class AnalysisTaskController {
      * 停止任务
      */
     @PostMapping("/{taskId}/stop")
-    public WVPResult<Boolean> stopTask(@PathVariable Integer taskId) {
+    public WVPResult<Boolean> stopTask(@PathVariable String taskId) {
         try {
             logger.info("停止分析任务: {}", taskId);
             boolean result = analysisTaskService.stopTask(taskId);
@@ -128,7 +128,7 @@ public class AnalysisTaskController {
      * 删除任务
      */
     @DeleteMapping("/{taskId}")
-    public WVPResult<Boolean> deleteTask(@PathVariable Integer taskId) {
+    public WVPResult<Boolean> deleteTask(@PathVariable String taskId) {
         try {
             logger.info("删除分析任务: {}", taskId);
             boolean result = analysisTaskService.deleteTask(taskId);
