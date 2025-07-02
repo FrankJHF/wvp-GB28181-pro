@@ -25,7 +25,8 @@
     </sql>
 
     <!-- 插入任务 -->
-    <insert id="insert" parameterType="com.genersoft.iot.vmp.analysis.entity.AnalysisTask">
+    <insert id="insert" parameterType="com.genersoft.iot.vmp.analysis.entity.AnalysisTask"
+            useGeneratedKeys="true" keyProperty="id">
         INSERT INTO wvp_analysis_tasks (
             task_id, task_name, device_id, channel_id, channel_name,
             vlm_question, clip_duration, status, create_time, update_time
@@ -38,6 +39,11 @@
     <!-- 根据任务ID删除 -->
     <delete id="deleteByTaskId" parameterType="string">
         DELETE FROM wvp_analysis_tasks WHERE task_id = #{taskId}
+    </delete>
+
+    <!-- 根据主键ID删除 -->
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM wvp_analysis_tasks WHERE id = #{id}
     </delete>
 
     <!-- 更新任务 -->
@@ -68,6 +74,13 @@
         SELECT <include refid="Base_Column_List"/>
         FROM wvp_analysis_tasks
         WHERE task_id = #{taskId}
+    </select>
+
+    <!-- 根据主键ID查询任务 -->
+    <select id="selectById" parameterType="int" resultMap="AnalysisTaskResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM wvp_analysis_tasks
+        WHERE id = #{id}
     </select>
 
     <!-- 查询所有任务 -->

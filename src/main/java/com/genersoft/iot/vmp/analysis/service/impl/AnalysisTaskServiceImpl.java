@@ -64,9 +64,20 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
         // 3. 创建任务实体
         AnalysisTask task = new AnalysisTask();
+
+        // 生成UUID作为taskId
+        task.setTaskId(java.util.UUID.randomUUID().toString());
         task.setTaskName(request.getTaskName());
         task.setDeviceId(request.getDeviceId());
         task.setChannelId(request.getChannelId());
+
+        // 获取通道名称
+        String channelName = getChannelName(request.getDeviceId(), request.getChannelId());
+        if (channelName == null || channelName.trim().isEmpty()) {
+            channelName = "通道-" + request.getChannelId(); // 默认名称
+        }
+        task.setChannelName(channelName);
+
         task.setAnalysisQuestion(request.getAnalysisQuestion());
         task.setAnalysisInterval(request.getAnalysisInterval());
         task.setTaskDescription(request.getTaskDescription());
@@ -82,6 +93,8 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
             throw new RuntimeException("创建任务失败");
         }
 
+        logger.info("任务保存成功，主键ID: {}, taskId: {}", task.getId(), task.getTaskId());
+
         // 5. 如果需要自动启动，则启动任务
         if (Boolean.TRUE.equals(request.getAutoStart())) {
             startTask(task.getId());
@@ -89,6 +102,21 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
         logger.info("成功创建分析任务，ID: {}", task.getId());
         return task.getId();
+    }
+
+    /**
+     * 获取通道名称
+     */
+    private String getChannelName(String deviceId, String channelId) {
+        try {
+            DeviceChannel channel = deviceChannelService.getOne(deviceId, channelId);
+            if (channel != null && channel.getName() != null) {
+                return channel.getName();
+            }
+        } catch (Exception e) {
+            logger.warn("获取通道名称失败: deviceId={}, channelId={}", deviceId, channelId, e);
+        }
+        return null;
     }
 
     @Override

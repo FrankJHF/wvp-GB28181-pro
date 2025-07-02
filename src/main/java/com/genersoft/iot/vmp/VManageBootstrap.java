@@ -27,6 +27,7 @@ import java.util.Collections;
 @SpringBootApplication
 @EnableScheduling
 @EnableCaching
+// 新增：扫描mapper和dao
 @MapperScan({"com.genersoft.iot.vmp.**.mapper", "com.genersoft.iot.vmp.**.dao"})
 @Slf4j
 public class VManageBootstrap extends SpringBootServletInitializer {
