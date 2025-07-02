@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.genersoft.iot.vmp.analysis.mapper.AnalysisTaskMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="AnalysisTaskResultMap" type="com.genersoft.iot.vmp.analysis.entity.AnalysisTask">
+        <id column="id" property="id"/>
+        <result column="task_id" property="taskId"/>
+        <result column="task_name" property="taskName"/>
+        <result column="device_id" property="deviceId"/>
+        <result column="channel_id" property="channelId"/>
+        <result column="channel_name" property="channelName"/>
+        <result column="vlm_question" property="vlmQuestion"/>
+        <result column="clip_duration" property="clipDuration"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, task_id, task_name, device_id, channel_id, channel_name,
+        vlm_question, clip_duration, status, create_time, update_time
+    </sql>
+
+    <!-- 插入任务 -->
+    <insert id="insert" parameterType="com.genersoft.iot.vmp.analysis.entity.AnalysisTask">
+        INSERT INTO wvp_analysis_tasks (
+            task_id, task_name, device_id, channel_id, channel_name,
+            vlm_question, clip_duration, status, create_time, update_time
+        ) VALUES (
+            #{taskId}, #{taskName}, #{deviceId}, #{channelId}, #{channelName},
+            #{vlmQuestion}, #{clipDuration}, #{status}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <!-- 根据任务ID删除 -->
+    <delete id="deleteByTaskId" parameterType="string">
+        DELETE FROM wvp_analysis_tasks WHERE task_id = #{taskId}
+    </delete>
+
+    <!-- 更新任务 -->
+    <update id="update" parameterType="com.genersoft.iot.vmp.analysis.entity.AnalysisTask">
+        UPDATE wvp_analysis_tasks
+        <set>
+            <if test="taskName != null">task_name = #{taskName},</if>
+            <if test="deviceId != null">device_id = #{deviceId},</if>
+            <if test="channelId != null">channel_id = #{channelId},</if>
+            <if test="channelName != null">channel_name = #{channelName},</if>
+            <if test="vlmQuestion != null">vlm_question = #{vlmQuestion},</if>
+            <if test="clipDuration != null">clip_duration = #{clipDuration},</if>
+            <if test="status != null">status = #{status},</if>
+            update_time = #{updateTime}
+        </set>
+        WHERE task_id = #{taskId}
+    </update>
+
+    <!-- 更新任务状态 -->
+    <update id="updateStatus">
+        UPDATE wvp_analysis_tasks
+        SET status = #{status}, update_time = #{updateTime}
+        WHERE task_id = #{taskId}
+    </update>
+
+    <!-- 根据任务ID查询 -->
+    <select id="selectByTaskId" parameterType="string" resultMap="AnalysisTaskResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM wvp_analysis_tasks
+        WHERE task_id = #{taskId}
+    </select>
+
+    <!-- 查询所有任务 -->
+    <select id="selectAll" resultMap="AnalysisTaskResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM wvp_analysis_tasks
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据状态查询任务 -->
+    <select id="selectByStatus" resultMap="AnalysisTaskResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM wvp_analysis_tasks
+        WHERE status = #{status}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据设备和通道查询任务 -->
+    <select id="selectByDeviceAndChannel" resultMap="AnalysisTaskResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM wvp_analysis_tasks
+        WHERE device_id = #{deviceId} AND channel_id = #{channelId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 分页查询任务 -->
+    <select id="selectByPage" resultMap="AnalysisTaskResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM wvp_analysis_tasks
+        <where>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (task_name LIKE CONCAT('%', #{keyword}, '%')
+                OR channel_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 统计任务总数 -->
+    <select id="countByCondition" resultType="int">
+        SELECT COUNT(*)
+        FROM wvp_analysis_tasks
+        <where>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (task_name LIKE CONCAT('%', #{keyword}, '%')
+                OR channel_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <!-- 统计各状态任务数量 -->
+    <select id="countByStatus" resultType="com.genersoft.iot.vmp.analysis.mapper.AnalysisTaskMapper$StatusCount">
+        SELECT status, COUNT(*) as count
+        FROM wvp_analysis_tasks
+        GROUP BY status
+    </select>
+
+    <!-- 检查任务名称是否存在 -->
+    <select id="countByTaskName" resultType="int">
+        SELECT COUNT(*)
+        FROM wvp_analysis_tasks
+        WHERE task_name = #{taskName}
+        <if test="excludeTaskId != null">
+            AND task_id != #{excludeTaskId}
+        </if>
+    </select>
+
+    <!-- 批量更新任务状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE wvp_analysis_tasks
+        SET status = #{status}, update_time = #{updateTime}
+        WHERE task_id IN
+        <foreach item="taskId" collection="taskIds" open="(" separator="," close=")">
+            #{taskId}
+        </foreach>
+    </update>
+
+</mapper>

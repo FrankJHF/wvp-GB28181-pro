@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.genersoft.iot.vmp.analysis.mapper.AnalysisResultMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="AnalysisResultResultMap" type="com.genersoft.iot.vmp.analysis.entity.AnalysisResult">
+        <id column="id" property="id"/>
+        <result column="task_id" property="taskId"/>
+        <result column="result_time" property="resultTime"/>
+        <result column="vlm_question" property="vlmQuestion"/>
+        <result column="vlm_answer" property="vlmAnswer"/>
+        <result column="is_alarm" property="isAlarm"/>
+        <result column="video_clip_path" property="videoClipPath"/>
+        <result column="key_frame_path" property="keyFramePath"/>
+        <result column="create_time" property="createTime"/>
+        <!-- 关联任务信息 -->
+        <association property="task" javaType="com.genersoft.iot.vmp.analysis.entity.AnalysisTask">
+            <id column="task_id" property="taskId"/>
+            <result column="task_task_name" property="taskName"/>
+            <result column="task_device_id" property="deviceId"/>
+            <result column="task_channel_id" property="channelId"/>
+            <result column="task_channel_name" property="channelName"/>
+            <result column="task_vlm_question" property="vlmQuestion"/>
+            <result column="task_clip_duration" property="clipDuration"/>
+            <result column="task_status" property="status"/>
+            <result column="task_create_time" property="createTime"/>
+            <result column="task_update_time" property="updateTime"/>
+        </association>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, task_id, result_time, vlm_question, vlm_answer,
+        is_alarm, video_clip_path, key_frame_path, create_time
+    </sql>
+
+    <!-- 关联任务信息的列 -->
+    <sql id="Result_With_Task_Column_List">
+        ar.id, ar.task_id, ar.result_time, ar.vlm_question, ar.vlm_answer,
+        ar.is_alarm, ar.video_clip_path, ar.key_frame_path, ar.create_time,
+        at.task_name as task_task_name,
+        at.device_id as task_device_id, at.channel_id as task_channel_id,
+        at.channel_name as task_channel_name, at.vlm_question as task_vlm_question,
+        at.clip_duration as task_clip_duration, at.status as task_status,
+        at.create_time as task_create_time, at.update_time as task_update_time
+    </sql>
+
+    <!-- 插入分析结果 -->
+    <insert id="insert" parameterType="com.genersoft.iot.vmp.analysis.entity.AnalysisResult"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO wvp_analysis_results (
+            task_id, result_time, vlm_question, vlm_answer,
+            is_alarm, video_clip_path, key_frame_path, create_time
+        ) VALUES (
+            #{taskId}, #{resultTime}, #{vlmQuestion}, #{vlmAnswer},
+            #{isAlarm}, #{videoClipPath}, #{keyFramePath}, #{createTime}
+        )
+    </insert>
+
+    <!-- 根据结果ID删除 -->
+    <delete id="deleteByResultId" parameterType="int">
+        DELETE FROM wvp_analysis_results WHERE id = #{id}
+    </delete>
+
+    <!-- 根据任务ID删除所有相关结果 -->
+    <delete id="deleteByTaskId" parameterType="string">
+        DELETE FROM wvp_analysis_results WHERE task_id = #{taskId}
+    </delete>
+
+    <!-- 根据结果ID查询详情 -->
+    <select id="selectByResultId" parameterType="int" resultMap="AnalysisResultResultMap">
+        SELECT <include refid="Result_With_Task_Column_List"/>
+        FROM wvp_analysis_results ar
+        LEFT JOIN wvp_analysis_tasks at ON ar.task_id = at.task_id
+        WHERE ar.id = #{id}
+    </select>
+
+    <!-- 根据任务ID查询结果列表 -->
+    <select id="selectByTaskId" parameterType="string" resultMap="AnalysisResultResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM wvp_analysis_results
+        WHERE task_id = #{taskId}
+        ORDER BY result_time DESC
+    </select>
+
+    <!-- 多条件分页查询分析结果 -->
+    <select id="selectByPage" resultMap="AnalysisResultResultMap">
+        SELECT <include refid="Result_With_Task_Column_List"/>
+        FROM wvp_analysis_results ar
+        LEFT JOIN wvp_analysis_tasks at ON ar.task_id = at.task_id
+        <where>
+            <if test="startDate != null">
+                AND ar.result_time >= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND ar.result_time &lt;= #{endDate}
+            </if>
+            <if test="taskId != null and taskId != ''">
+                AND ar.task_id = #{taskId}
+            </if>
+            <if test="channelId != null and channelId != ''">
+                AND at.channel_id = #{channelId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (ar.vlm_question LIKE CONCAT('%', #{keyword}, '%')
+                OR ar.vlm_answer LIKE CONCAT('%', #{keyword}, '%')
+                OR at.task_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="onlyAlarm != null and onlyAlarm == true">
+                AND ar.is_alarm = 1
+            </if>
+        </where>
+        ORDER BY ar.result_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 统计符合条件的结果总数 -->
+    <select id="countByCondition" resultType="int">
+        SELECT COUNT(*)
+        FROM wvp_analysis_results ar
+        LEFT JOIN wvp_analysis_tasks at ON ar.task_id = at.task_id
+        <where>
+            <if test="startDate != null">
+                AND ar.result_time >= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND ar.result_time &lt;= #{endDate}
+            </if>
+            <if test="taskId != null and taskId != ''">
+                AND ar.task_id = #{taskId}
+            </if>
+            <if test="channelId != null and channelId != ''">
+                AND at.channel_id = #{channelId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (ar.vlm_question LIKE CONCAT('%', #{keyword}, '%')
+                OR ar.vlm_answer LIKE CONCAT('%', #{keyword}, '%')
+                OR at.task_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="onlyAlarm != null and onlyAlarm == true">
+                AND ar.is_alarm = 1
+            </if>
+        </where>
+    </select>
+
+    <!-- 统计今日分析总数 -->
+    <select id="countTodayTotal" resultType="int">
+        SELECT COUNT(*)
+        FROM wvp_analysis_results
+        WHERE result_time >= #{today}
+    </select>
+
+    <!-- 统计今日报警数量 -->
+    <select id="countTodayAlarms" resultType="int">
+        SELECT COUNT(*)
+        FROM wvp_analysis_results
+        WHERE result_time >= #{today} AND is_alarm = 1
+    </select>
+
+    <!-- 统计指定时间范围内的分析结果 -->
+    <select id="countByDateRange" resultType="com.genersoft.iot.vmp.analysis.mapper.AnalysisResultMapper$AnalysisStatistics">
+        SELECT
+            COUNT(*) as totalCount,
+            SUM(CASE WHEN is_alarm = 1 THEN 1 ELSE 0 END) as alarmCount,
+            SUM(CASE WHEN is_alarm = 0 THEN 1 ELSE 0 END) as normalCount
+        FROM wvp_analysis_results
+        WHERE result_time >= #{startDate} AND result_time &lt;= #{endDate}
+    </select>
+
+    <!-- 查询最近的分析结果 -->
+    <select id="selectRecent" resultMap="AnalysisResultResultMap">
+        SELECT <include refid="Result_With_Task_Column_List"/>
+        FROM wvp_analysis_results ar
+        LEFT JOIN wvp_analysis_tasks at ON ar.task_id = at.task_id
+        ORDER BY ar.result_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询指定任务的最新结果 -->
+    <select id="selectLatestByTaskId" parameterType="string" resultMap="AnalysisResultResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM wvp_analysis_results
+        WHERE task_id = #{taskId}
+        ORDER BY result_time DESC
+        LIMIT 1
+    </select>
+
+    <!-- 按小时统计分析数量 -->
+    <select id="countByHour" resultType="com.genersoft.iot.vmp.analysis.mapper.AnalysisResultMapper$HourlyCount">
+        SELECT
+            DATE_FORMAT(result_time, '%Y-%m-%d %H') as hour,
+            COUNT(*) as totalCount,
+            SUM(CASE WHEN is_alarm = 1 THEN 1 ELSE 0 END) as alarmCount
+        FROM wvp_analysis_results
+        WHERE result_time >= #{startDate} AND result_time &lt;= #{endDate}
+        GROUP BY DATE_FORMAT(result_time, '%Y-%m-%d %H')
+        ORDER BY hour
+    </select>
+
+    <!-- 按通道统计分析数量 -->
+    <select id="countByChannel" resultType="com.genersoft.iot.vmp.analysis.mapper.AnalysisResultMapper$ChannelCount">
+        SELECT
+            at.channel_id as channelId,
+            at.channel_name as channelName,
+            COUNT(*) as totalCount,
+            SUM(CASE WHEN ar.is_alarm = 1 THEN 1 ELSE 0 END) as alarmCount
+        FROM wvp_analysis_results ar
+        LEFT JOIN wvp_analysis_tasks at ON ar.task_id = at.task_id
+        <where>
+            <if test="startDate != null">
+                AND ar.result_time >= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND ar.result_time &lt;= #{endDate}
+            </if>
+        </where>
+        GROUP BY at.channel_id, at.channel_name
+        ORDER BY totalCount DESC
+    </select>
+
+    <!-- 导出数据查询（不分页） -->
+    <select id="selectForExport" resultMap="AnalysisResultResultMap">
+        SELECT <include refid="Result_With_Task_Column_List"/>
+        FROM wvp_analysis_results ar
+        LEFT JOIN wvp_analysis_tasks at ON ar.task_id = at.task_id
+        <where>
+            <if test="startDate != null">
+                AND ar.result_time >= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND ar.result_time &lt;= #{endDate}
+            </if>
+            <if test="taskId != null and taskId != ''">
+                AND ar.task_id = #{taskId}
+            </if>
+            <if test="channelId != null and channelId != ''">
+                AND at.channel_id = #{channelId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (ar.vlm_question LIKE CONCAT('%', #{keyword}, '%')
+                OR ar.vlm_answer LIKE CONCAT('%', #{keyword}, '%')
+                OR at.task_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="onlyAlarm != null and onlyAlarm == true">
+                AND ar.is_alarm = 1
+            </if>
+        </where>
+        ORDER BY ar.result_time DESC
+    </select>
+
+    <!-- 清理过期数据 -->
+    <delete id="deleteExpiredData">
+        DELETE FROM wvp_analysis_results
+        WHERE result_time &lt; #{beforeDate}
+    </delete>
+
+</mapper>

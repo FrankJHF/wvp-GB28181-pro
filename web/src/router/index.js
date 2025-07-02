@@ -219,6 +219,19 @@ export const constantRoutes = [
   //   ]
   // },
   {
+    path: '/analysis',
+    component: Layout,
+    redirect: '/analysis',
+    children: [
+      {
+        path: '',
+        name: 'Analysis',
+        component: () => import('@/views/analysis/index'),
+        meta: { title: '智能分析', icon: 'analysis' }
+      }
+    ]
+  },
+  {
     path: '/operations',
     component: Layout,
     meta: { title: '运维中心', icon: 'operations' },
