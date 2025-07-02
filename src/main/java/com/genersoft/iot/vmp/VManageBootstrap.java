@@ -4,6 +4,7 @@ import com.genersoft.iot.vmp.jt1078.util.ClassUtil;
 import com.genersoft.iot.vmp.utils.GitUtil;
 import com.genersoft.iot.vmp.utils.SpringBeanFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -26,6 +27,7 @@ import java.util.Collections;
 @SpringBootApplication
 @EnableScheduling
 @EnableCaching
+@MapperScan({"com.genersoft.iot.vmp.**.mapper", "com.genersoft.iot.vmp.**.dao"})
 @Slf4j
 public class VManageBootstrap extends SpringBootServletInitializer {
 

@@ -100,7 +100,7 @@ export function getRunningTasks() {
  */
 export function getAnalysisDevices() {
   return request({
-    url: '/api/analysis/devices',
+    url: '/api/analysis/tasks/devices',
     method: 'get'
   })
 }
@@ -111,20 +111,20 @@ export function getAnalysisDevices() {
  */
 export function getDeviceChannels(deviceId) {
   return request({
-    url: `/api/analysis/devices/${deviceId}/channels`,
+    url: `/api/analysis/tasks/devices/${deviceId}/channels`,
     method: 'get'
   })
 }
 
 /**
  * 验证任务配置
- * @param {Object} data 验证参数
+ * @param {Object} params 验证参数
  */
-export function validateTaskConfig(data) {
+export function validateTaskConfig(params) {
   return request({
     url: '/api/analysis/tasks/validate',
     method: 'post',
-    data
+    params
   })
 }
 

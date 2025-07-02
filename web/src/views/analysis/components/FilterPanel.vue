@@ -101,9 +101,9 @@
       <!-- 仅显示告警开关 -->
       <el-form-item>
         <el-switch
-          v-model="filterForm.alarmsOnly"
+          v-model="filterForm.onlyAlarm"
           active-text="仅显示告警"
-          @change="onAlarmsOnlyChange"
+          @change="onAlarmOnlyChange"
         />
       </el-form-item>
 
@@ -150,9 +150,9 @@ export default {
         deviceId: '',
         channelId: '',
         keyword: '',
-        alarmsOnly: false,
-        startTime: '',
-        endTime: ''
+        onlyAlarm: false,
+        startDate: '',
+        endDate: ''
       },
 
       // 时间范围
@@ -248,11 +248,11 @@ export default {
     // 时间范围变更事件
     onTimeRangeChange(timeRange) {
       if (timeRange && timeRange.length === 2) {
-        this.filterForm.startTime = timeRange[0]
-        this.filterForm.endTime = timeRange[1]
+        this.filterForm.startDate = timeRange[0]
+        this.filterForm.endDate = timeRange[1]
       } else {
-        this.filterForm.startTime = ''
-        this.filterForm.endTime = ''
+        this.filterForm.startDate = ''
+        this.filterForm.endDate = ''
       }
       this.currentQuickFilter = ''
       this.emitFilterChange()
@@ -271,17 +271,17 @@ export default {
 
     // 结果类型变更事件
     onResultTypeChange() {
-      // 根据选择的结果类型更新alarmsOnly
+      // 根据选择的结果类型更新onlyAlarm
       if (this.resultTypes.length === 1 && this.resultTypes[0] === 'alarm') {
-        this.filterForm.alarmsOnly = true
+        this.filterForm.onlyAlarm = true
       } else {
-        this.filterForm.alarmsOnly = false
+        this.filterForm.onlyAlarm = false
       }
       this.emitFilterChange()
     },
 
     // 仅显示告警变更事件
-    onAlarmsOnlyChange(value) {
+    onAlarmOnlyChange(value) {
       if (value) {
         this.resultTypes = ['alarm']
       } else {
@@ -326,9 +326,9 @@ export default {
         deviceId: '',
         channelId: '',
         keyword: '',
-        alarmsOnly: false,
-        startTime: '',
-        endTime: ''
+        onlyAlarm: false,
+        startDate: '',
+        endDate: ''
       }
       this.timeRange = []
       this.resultTypes = ['normal', 'alarm']
@@ -344,8 +344,7 @@ export default {
     // 发出筛选变更事件
     emitFilterChange() {
       const filterParams = {
-        ...this.filterForm,
-        resultTypes: this.resultTypes
+        ...this.filterForm
       }
 
       this.$emit('filter-change', filterParams)
@@ -354,8 +353,7 @@ export default {
     // 获取当前筛选参数
     getCurrentFilter() {
       return {
-        ...this.filterForm,
-        resultTypes: this.resultTypes
+        ...this.filterForm
       }
     }
   }

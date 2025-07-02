@@ -119,12 +119,12 @@ export default {
         runningTasks: 0
       },
       currentFilter: {
-        startTime: '',
-        endTime: '',
+        startDate: '',
+        endDate: '',
         deviceId: '',
         channelId: '',
         keyword: '',
-        alarmsOnly: false,
+        onlyAlarm: false,
         page: 1,
         pageSize: 20
       },
