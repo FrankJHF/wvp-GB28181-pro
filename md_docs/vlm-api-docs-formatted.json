@@ -1,0 +1,1048 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "VLM Video Analysis Microservice (Inference)",
+        "description": "\u5b9e\u65f6\u89c6\u9891\u5206\u6790\u5fae\u670d\u52a1 - Inference\u76f4\u63a5\u7248\u672c",
+        "version": "1.0.0-inference"
+    },
+    "paths": {
+        "/api/vlm/jobs": {
+            "post": {
+                "summary": "Create Job",
+                "description": "\u521b\u5efa\u89c6\u9891\u5206\u6790\u4f5c\u4e1a - \u652f\u6301\u53ef\u9009\u542f\u52a8",
+                "operationId": "create_job_api_vlm_jobs_post",
+                "parameters": [
+                    {
+                        "name": "auto_start",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "description": "\u662f\u5426\u81ea\u52a8\u542f\u52a8\u4efb\u52a1\uff0c\u9ed8\u8ba4\u4e3aTrue\u4ee5\u4fdd\u6301\u5411\u540e\u517c\u5bb9",
+                            "default": true,
+                            "title": "Auto Start"
+                        },
+                        "description": "\u662f\u5426\u81ea\u52a8\u542f\u52a8\u4efb\u52a1\uff0c\u9ed8\u8ba4\u4e3aTrue\u4ee5\u4fdd\u6301\u5411\u540e\u517c\u5bb9"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/JobCreateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JobCreateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/vlm/jobs/{job_id}": {
+            "get": {
+                "summary": "Get Job Status",
+                "description": "\u67e5\u8be2\u4f5c\u4e1a\u72b6\u6001",
+                "operationId": "get_job_status_api_vlm_jobs__job_id__get",
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Job Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JobStatusResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Stop Job",
+                "description": "\u505c\u6b62\u4f5c\u4e1a - Inference\u76f4\u63a5\u7248\u672c",
+                "operationId": "stop_job_api_vlm_jobs__job_id__delete",
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Job Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JobCancelResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/vlm/jobs/{job_id}/start": {
+            "post": {
+                "summary": "Start Job",
+                "description": "\u542f\u52a8\u4efb\u52a1",
+                "operationId": "start_job_api_vlm_jobs__job_id__start_post",
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Job Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/JobStartRequest",
+                                "default": {
+                                    "force_restart": false
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JobActionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/vlm/jobs/{job_id}/pause": {
+            "post": {
+                "summary": "Pause Job",
+                "description": "\u6682\u505c\u4efb\u52a1",
+                "operationId": "pause_job_api_vlm_jobs__job_id__pause_post",
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Job Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JobActionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/vlm/jobs/{job_id}/resume": {
+            "post": {
+                "summary": "Resume Job",
+                "description": "\u6062\u590d\u4efb\u52a1",
+                "operationId": "resume_job_api_vlm_jobs__job_id__resume_post",
+                "parameters": [
+                    {
+                        "name": "job_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Job Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JobActionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "summary": "Health Check",
+                "description": "\u5065\u5eb7\u68c0\u67e5 - Inference\u7248\u672c",
+                "operationId": "health_check_health_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HealthResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AnalysisConfig": {
+                "properties": {
+                    "inference_interval": {
+                        "type": "integer",
+                        "maximum": 60.0,
+                        "minimum": 1.0,
+                        "title": "Inference Interval",
+                        "description": "Inference interval in seconds",
+                        "default": 5
+                    },
+                    "frame_buffer_size": {
+                        "type": "integer",
+                        "maximum": 300.0,
+                        "minimum": 30.0,
+                        "title": "Frame Buffer Size",
+                        "description": "Frame buffer size",
+                        "default": 180
+                    },
+                    "sampling_fps": {
+                        "type": "integer",
+                        "maximum": 30.0,
+                        "minimum": 1.0,
+                        "title": "Sampling Fps",
+                        "description": "Frame sampling rate",
+                        "default": 5
+                    },
+                    "max_new_tokens": {
+                        "type": "integer",
+                        "maximum": 500.0,
+                        "minimum": 50.0,
+                        "title": "Max New Tokens",
+                        "description": "Max tokens for model generation",
+                        "default": 180
+                    },
+                    "analysis_prompt": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 2000
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Analysis Prompt",
+                        "description": "Custom analysis prompt, uses default if not specified"
+                    },
+                    "model_name": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 100
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Model Name",
+                        "description": "Model name for analysis, uses default if not specified"
+                    }
+                },
+                "type": "object",
+                "title": "AnalysisConfig",
+                "description": "Configuration parameters for video analysis.\n\nControls how the inference pipeline processes video streams.",
+                "example": {
+                    "analysis_prompt": "\u8bf7\u5206\u6790\u89c6\u9891\u4e2d\u662f\u5426\u53d1\u751f\u706b\u707e\u6216\u5176\u4ed6\u7a81\u53d1\u60c5\u51b5",
+                    "frame_buffer_size": 180,
+                    "inference_interval": 5,
+                    "max_new_tokens": 180,
+                    "model_name": "videollama3-fire-detection",
+                    "sampling_fps": 5
+                }
+            },
+            "AnalysisResult": {
+                "properties": {
+                    "job_id": {
+                        "type": "string",
+                        "title": "Job Id",
+                        "description": "\u4f5c\u4e1a\u552f\u4e00\u6807\u8bc6\u7b26"
+                    },
+                    "device_id": {
+                        "type": "string",
+                        "title": "Device Id",
+                        "description": "\u8bbe\u5907ID"
+                    },
+                    "channel_id": {
+                        "type": "string",
+                        "title": "Channel Id",
+                        "description": "\u901a\u9053ID"
+                    },
+                    "analysis_timestamp_utc": {
+                        "type": "string",
+                        "title": "Analysis Timestamp Utc",
+                        "description": "\u5206\u6790\u62a5\u544a\u751f\u6210\u7684UTC\u65f6\u95f4 (ISO 8601\u683c\u5f0f)"
+                    },
+                    "video_window": {
+                        "$ref": "#/components/schemas/VideoWindow",
+                        "description": "\u89c6\u9891\u7a97\u53e3\u65f6\u95f4\u5750\u6807\u4fe1\u606f"
+                    },
+                    "events": {
+                        "items": {
+                            "$ref": "#/components/schemas/Event"
+                        },
+                        "type": "array",
+                        "title": "Events",
+                        "description": "\u68c0\u6d4b\u5230\u7684\u4e8b\u4ef6\u5217\u8868"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "job_id",
+                    "device_id",
+                    "channel_id",
+                    "analysis_timestamp_utc",
+                    "video_window",
+                    "events"
+                ],
+                "title": "AnalysisResult",
+                "description": "\u5b8c\u6574\u7684\u89c6\u9891\u5206\u6790\u7ed3\u679c\uff0c\u5305\u542b\u7cbe\u786e\u7684\u65f6\u7a7a\u5750\u6807\u4fe1\u606f\u3002\n\n\u8fd9\u4e2a\u6a21\u578b\u5bf9\u5e94\u53d1\u9001\u7ed9WVP\u5e73\u53f0\u7684\u56de\u8c03\u683c\u5f0f\uff0c\u5305\u542bVideoWindow\u548c\u5b8c\u6574\u7684Event\u5217\u8868\u3002",
+                "example": {
+                    "analysis_timestamp_utc": "2024-05-21T11:01:05.123Z",
+                    "channel_id": "34020000001310000001",
+                    "device_id": "34020000001320000001",
+                    "events": [
+                        {
+                            "emergency_exist": true,
+                            "event_description": "\u68c0\u6d4b\u5230\u753b\u9762\u53f3\u4fa7\u6709\u6301\u7eed\u6027\u70df\u96fe\u5192\u51fa\uff0c\u7591\u4f3c\u521d\u671f\u706b\u707e\u3002",
+                            "event_end_pts": 135.3,
+                            "event_end_utc": "2024-05-21T11:00:35.000Z",
+                            "event_start_pts": 115.3,
+                            "event_start_utc": "2024-05-21T11:00:15.000Z",
+                            "event_time_range": "15.0-35.0",
+                            "snapshot_base64": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/..."
+                        }
+                    ],
+                    "job_id": "c1b2a3d4-e5f6-7890-1234-567890abcdef",
+                    "video_window": {
+                        "stream_end_pts": 160.2,
+                        "stream_end_utc": "2024-05-21T11:00:59.999Z",
+                        "stream_start_pts": 100.3,
+                        "stream_start_utc": "2024-05-21T11:00:00.000Z"
+                    }
+                }
+            },
+            "Event": {
+                "properties": {
+                    "event_start_pts": {
+                        "type": "number",
+                        "title": "Event Start Pts",
+                        "description": "\u4e8b\u4ef6\u5728\u6574\u4e2a\u89c6\u9891\u6d41\u4e2d\u7684\u7edd\u5bf9\u8d77\u59cbPTS"
+                    },
+                    "event_end_pts": {
+                        "type": "number",
+                        "title": "Event End Pts",
+                        "description": "\u4e8b\u4ef6\u5728\u6574\u4e2a\u89c6\u9891\u6d41\u4e2d\u7684\u7edd\u5bf9\u7ed3\u675fPTS"
+                    },
+                    "event_start_utc": {
+                        "type": "string",
+                        "title": "Event Start Utc",
+                        "description": "\u4e8b\u4ef6\u7684\u7edd\u5bf9\u8d77\u59cbUTC\u65f6\u95f4 (ISO 8601\u683c\u5f0f)"
+                    },
+                    "event_end_utc": {
+                        "type": "string",
+                        "title": "Event End Utc",
+                        "description": "\u4e8b\u4ef6\u7684\u7edd\u5bf9\u7ed3\u675fUTC\u65f6\u95f4 (ISO 8601\u683c\u5f0f)"
+                    },
+                    "event_time_range": {
+                        "type": "string",
+                        "title": "Event Time Range",
+                        "description": "\u76f8\u5bf9\u65f6\u95f4\u8303\u56f4\uff0c\u683c\u5f0f'0.0-15.0' (\u79d2)"
+                    },
+                    "event_description": {
+                        "type": "string",
+                        "title": "Event Description",
+                        "description": "\u4e8b\u4ef6\u63cf\u8ff0"
+                    },
+                    "emergency_exist": {
+                        "type": "boolean",
+                        "title": "Emergency Exist",
+                        "description": "\u662f\u5426\u5b58\u5728\u7d27\u6025\u4e8b\u4ef6"
+                    },
+                    "snapshot_base64": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Snapshot Base64",
+                        "description": "\u7d27\u6025\u4e8b\u4ef6\u5feb\u7167\u7684base64\u7f16\u7801"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "event_start_pts",
+                    "event_end_pts",
+                    "event_start_utc",
+                    "event_end_utc",
+                    "event_time_range",
+                    "event_description",
+                    "emergency_exist"
+                ],
+                "title": "Event",
+                "description": "\u8868\u793a\u5728\u89c6\u9891\u5206\u6790\u4e2d\u68c0\u6d4b\u5230\u7684\u5355\u4e2a\u4e8b\u4ef6\u3002\n\n\u5305\u542b\u76f8\u5bf9\u65f6\u95f4\u8303\u56f4\u548c\u8ba1\u7b97\u5f97\u51fa\u7684\u7edd\u5bf9PTS/UTC\u65f6\u95f4\u5750\u6807\uff0c\u652f\u6301\u7d27\u6025\u4e8b\u4ef6\u5feb\u7167\u3002",
+                "example": {
+                    "emergency_exist": true,
+                    "event_description": "\u68c0\u6d4b\u5230\u753b\u9762\u53f3\u4fa7\u6709\u6301\u7eed\u6027\u70df\u96fe\u5192\u51fa\uff0c\u7591\u4f3c\u521d\u671f\u706b\u707e\u3002",
+                    "event_end_pts": 135.3,
+                    "event_end_utc": "2024-05-21T11:00:35.000Z",
+                    "event_start_pts": 115.3,
+                    "event_start_utc": "2024-05-21T11:00:15.000Z",
+                    "event_time_range": "15.0-35.0",
+                    "snapshot_base64": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/..."
+                }
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "HealthResponse": {
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "healthy",
+                            "unhealthy"
+                        ],
+                        "title": "Status",
+                        "description": "\u6574\u4f53\u5065\u5eb7\u72b6\u6001"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Timestamp",
+                        "description": "\u5065\u5eb7\u68c0\u67e5\u65f6\u95f4"
+                    },
+                    "components": {
+                        "additionalProperties": {
+                            "type": "boolean"
+                        },
+                        "type": "object",
+                        "title": "Components",
+                        "description": "\u5404\u7ec4\u4ef6\u5065\u5eb7\u72b6\u6001"
+                    },
+                    "message": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Message",
+                        "description": "\u989d\u5916\u72b6\u6001\u4fe1\u606f"
+                    },
+                    "uptime_seconds": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Uptime Seconds",
+                        "description": "\u670d\u52a1\u8fd0\u884c\u65f6\u95f4\uff08\u79d2\uff09"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "status",
+                    "components"
+                ],
+                "title": "HealthResponse",
+                "description": "\u5065\u5eb7\u68c0\u67e5\u54cd\u5e94",
+                "examples": [
+                    {
+                        "components": {
+                            "callback_processor": true,
+                            "gpu": true,
+                            "inference_thread": true,
+                            "job_manager": true
+                        },
+                        "message": "All systems operational",
+                        "status": "healthy",
+                        "timestamp": "2024-05-21T11:00:00.000Z",
+                        "uptime_seconds": 3600
+                    },
+                    {
+                        "components": {
+                            "callback_processor": true,
+                            "gpu": false,
+                            "inference_thread": false,
+                            "job_manager": true
+                        },
+                        "message": "GPU inference unavailable",
+                        "status": "unhealthy",
+                        "timestamp": "2024-05-21T11:00:00.000Z",
+                        "uptime_seconds": 3600
+                    }
+                ]
+            },
+            "JobActionResponse": {
+                "properties": {
+                    "job_id": {
+                        "type": "string",
+                        "title": "Job Id",
+                        "description": "\u4efb\u52a1ID"
+                    },
+                    "previous_status": {
+                        "type": "string",
+                        "title": "Previous Status",
+                        "description": "\u64cd\u4f5c\u524d\u72b6\u6001"
+                    },
+                    "current_status": {
+                        "type": "string",
+                        "title": "Current Status",
+                        "description": "\u64cd\u4f5c\u540e\u72b6\u6001"
+                    },
+                    "message": {
+                        "type": "string",
+                        "title": "Message",
+                        "description": "\u64cd\u4f5c\u7ed3\u679c\u6d88\u606f"
+                    },
+                    "action_timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Action Timestamp",
+                        "description": "\u64cd\u4f5c\u65f6\u95f4"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "job_id",
+                    "previous_status",
+                    "current_status",
+                    "message"
+                ],
+                "title": "JobActionResponse",
+                "description": "\u4efb\u52a1\u64cd\u4f5c\u54cd\u5e94\u6a21\u578b\n\n\u7528\u4e8e\u542f\u52a8\u3001\u6682\u505c\u3001\u6062\u590d\u64cd\u4f5c\u7684\u7edf\u4e00\u54cd\u5e94\u683c\u5f0f",
+                "example": {
+                    "action_timestamp": "2024-05-21T11:00:15.000Z",
+                    "current_status": "running",
+                    "job_id": "c1b2a3d4-e5f6-7890-1234-567890abcdef",
+                    "message": "Job started successfully",
+                    "previous_status": "created"
+                }
+            },
+            "JobCancelResponse": {
+                "properties": {
+                    "job_id": {
+                        "type": "string",
+                        "title": "Job Id",
+                        "description": "\u88ab\u53d6\u6d88\u7684\u4f5c\u4e1aID"
+                    },
+                    "message": {
+                        "type": "string",
+                        "title": "Message",
+                        "description": "\u53d6\u6d88\u64cd\u4f5c\u7ed3\u679c\u6d88\u606f"
+                    },
+                    "cancelled_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Cancelled At",
+                        "description": "\u53d6\u6d88\u64cd\u4f5c\u65f6\u95f4"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "job_id",
+                    "message"
+                ],
+                "title": "JobCancelResponse",
+                "description": "\u4f5c\u4e1a\u53d6\u6d88\u54cd\u5e94",
+                "example": {
+                    "cancelled_at": "2024-05-21T11:00:30.000Z",
+                    "job_id": "c1b2a3d4-e5f6-7890-1234-567890abcdef",
+                    "message": "Job cancelled successfully"
+                }
+            },
+            "JobCreateRequest": {
+                "properties": {
+                    "device_id": {
+                        "type": "string",
+                        "maxLength": 50,
+                        "minLength": 1,
+                        "title": "Device Id",
+                        "description": "\u8bbe\u5907ID\uff0c\u7528\u4e8e\u6807\u8bc6\u6444\u50cf\u5934\u8bbe\u5907",
+                        "examples": [
+                            "34020000001320000001"
+                        ]
+                    },
+                    "channel_id": {
+                        "type": "string",
+                        "maxLength": 50,
+                        "minLength": 1,
+                        "title": "Channel Id",
+                        "description": "\u901a\u9053ID\uff0c\u7528\u4e8e\u6807\u8bc6\u5177\u4f53\u7684\u89c6\u9891\u901a\u9053",
+                        "examples": [
+                            "34020000001310000001"
+                        ]
+                    },
+                    "input_type": {
+                        "type": "string",
+                        "const": "rtsp_stream",
+                        "title": "Input Type",
+                        "description": "\u8f93\u5165\u7c7b\u578b\uff0c\u76ee\u524d\u4ec5\u652f\u6301RTSP\u6d41",
+                        "default": "rtsp_stream"
+                    },
+                    "input_data": {
+                        "type": "string",
+                        "maxLength": 500,
+                        "minLength": 1,
+                        "title": "Input Data",
+                        "description": "RTSP\u6d41\u5730\u5740",
+                        "examples": [
+                            "rtsp://admin:password@192.168.1.100:554/stream1"
+                        ]
+                    },
+                    "callback_url": {
+                        "type": "string",
+                        "maxLength": 2083,
+                        "minLength": 1,
+                        "format": "uri",
+                        "title": "Callback Url",
+                        "description": "WVP\u5e73\u53f0\u56de\u8c03\u5730\u5740\uff0c\u7528\u4e8e\u63a5\u6536\u5206\u6790\u7ed3\u679c",
+                        "examples": [
+                            "http://wvp-server:8080/api/vlm/callback"
+                        ]
+                    },
+                    "analysis_config": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/AnalysisConfig"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "description": "\u5206\u6790\u914d\u7f6e\u53c2\u6570\uff0c\u4e0d\u63d0\u4f9b\u65f6\u4f7f\u7528\u9ed8\u8ba4\u503c"
+                    },
+                    "analysis_prompt": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 2000
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Analysis Prompt",
+                        "description": "\u81ea\u5b9a\u4e49\u5206\u6790\u63d0\u793a\u8bcd\uff0c\u4e0d\u6307\u5b9a\u65f6\u4f7f\u7528\u9ed8\u8ba4\u706b\u707e\u68c0\u6d4bprompt",
+                        "examples": [
+                            "\u8bf7\u5206\u6790\u89c6\u9891\u4e2d\u662f\u5426\u6709\u706b\u707e\u6216\u70df\u96fe..."
+                        ]
+                    },
+                    "model_name": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 100
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Model Name",
+                        "description": "\u6307\u5b9a\u4f7f\u7528\u7684\u5206\u6790\u6a21\u578b\u540d\u79f0\uff0c\u4e0d\u6307\u5b9a\u65f6\u4f7f\u7528\u9ed8\u8ba4\u6a21\u578b",
+                        "examples": [
+                            "videollama3-fire-detection"
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "device_id",
+                    "channel_id",
+                    "input_data",
+                    "callback_url"
+                ],
+                "title": "JobCreateRequest",
+                "description": "\u4f5c\u4e1a\u521b\u5efa\u8bf7\u6c42\u6a21\u578b\n\n\u7528\u4e8e\u521b\u5efa\u65b0\u7684\u89c6\u9891\u5206\u6790\u4f5c\u4e1a\uff0c\u5305\u542b\u5b8c\u6574\u7684\u53c2\u6570\u9a8c\u8bc1\u3002",
+                "example": {
+                    "analysis_config": {
+                        "frame_buffer_size": 180,
+                        "inference_interval": 5,
+                        "max_new_tokens": 180,
+                        "sampling_fps": 5
+                    },
+                    "analysis_prompt": "\u8bf7\u5206\u6790\u89c6\u9891\u4e2d\u662f\u5426\u53d1\u751f\u706b\u707e\u6216\u5176\u4ed6\u7a81\u53d1\u60c5\u51b5",
+                    "callback_url": "http://wvp-server:8080/api/vlm/callback",
+                    "channel_id": "34020000001310000001",
+                    "device_id": "34020000001320000001",
+                    "input_data": "rtsp://admin:password@192.168.1.100:554/stream1",
+                    "input_type": "rtsp_stream",
+                    "model_name": "videollama3-fire-detection"
+                }
+            },
+            "JobCreateResponse": {
+                "properties": {
+                    "job_id": {
+                        "type": "string",
+                        "title": "Job Id",
+                        "description": "\u65b0\u521b\u5efa\u7684\u4f5c\u4e1a\u552f\u4e00\u6807\u8bc6\u7b26"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "created",
+                            "pending"
+                        ],
+                        "title": "Status",
+                        "description": "\u521d\u59cb\u4f5c\u4e1a\u72b6\u6001",
+                        "default": "pending"
+                    },
+                    "message": {
+                        "type": "string",
+                        "title": "Message",
+                        "description": "\u521b\u5efa\u7ed3\u679c\u6d88\u606f"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At",
+                        "description": "\u4f5c\u4e1a\u521b\u5efa\u65f6\u95f4"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "job_id",
+                    "message"
+                ],
+                "title": "JobCreateResponse",
+                "description": "\u4f5c\u4e1a\u521b\u5efa\u6210\u529f\u54cd\u5e94",
+                "example": {
+                    "created_at": "2024-05-21T11:00:00.000Z",
+                    "job_id": "c1b2a3d4-e5f6-7890-1234-567890abcdef",
+                    "message": "Job created successfully",
+                    "status": "pending"
+                }
+            },
+            "JobStartRequest": {
+                "properties": {
+                    "force_restart": {
+                        "type": "boolean",
+                        "title": "Force Restart",
+                        "description": "\u5f3a\u5236\u91cd\u542f\u5df2\u8fd0\u884c\u7684\u4efb\u52a1",
+                        "default": false
+                    }
+                },
+                "type": "object",
+                "title": "JobStartRequest",
+                "description": "\u4efb\u52a1\u542f\u52a8\u8bf7\u6c42\u6a21\u578b",
+                "example": {
+                    "force_restart": false
+                }
+            },
+            "JobStatusResponse": {
+                "properties": {
+                    "job_id": {
+                        "type": "string",
+                        "title": "Job Id",
+                        "description": "\u4f5c\u4e1a\u552f\u4e00\u6807\u8bc6\u7b26"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "created",
+                            "pending",
+                            "running",
+                            "paused",
+                            "completed",
+                            "failed",
+                            "cancelled"
+                        ],
+                        "title": "Status",
+                        "description": "\u5f53\u524d\u4f5c\u4e1a\u72b6\u6001"
+                    },
+                    "device_id": {
+                        "type": "string",
+                        "title": "Device Id",
+                        "description": "\u5173\u8054\u7684\u8bbe\u5907ID"
+                    },
+                    "channel_id": {
+                        "type": "string",
+                        "title": "Channel Id",
+                        "description": "\u5173\u8054\u7684\u901a\u9053ID"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At",
+                        "description": "\u4f5c\u4e1a\u521b\u5efa\u65f6\u95f4"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Updated At",
+                        "description": "\u72b6\u6001\u6700\u540e\u66f4\u65b0\u65f6\u95f4"
+                    },
+                    "result": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/AnalysisResult"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "description": "\u5206\u6790\u7ed3\u679c\uff0c\u4ec5\u5728status\u4e3acompleted\u65f6\u5b58\u5728"
+                    },
+                    "error_message": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Error Message",
+                        "description": "\u9519\u8bef\u4fe1\u606f\uff0c\u4ec5\u5728status\u4e3afailed\u65f6\u5b58\u5728"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "job_id",
+                    "status",
+                    "device_id",
+                    "channel_id",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "JobStatusResponse",
+                "description": "\u4f5c\u4e1a\u72b6\u6001\u67e5\u8be2\u54cd\u5e94",
+                "examples": [
+                    {
+                        "channel_id": "34020000001310000001",
+                        "created_at": "2024-05-21T11:00:00.000Z",
+                        "device_id": "34020000001320000001",
+                        "job_id": "c1b2a3d4-e5f6-7890-1234-567890abcdef",
+                        "status": "running",
+                        "updated_at": "2024-05-21T11:00:05.000Z"
+                    },
+                    {
+                        "channel_id": "34020000001310000001",
+                        "created_at": "2024-05-21T11:00:00.000Z",
+                        "device_id": "34020000001320000001",
+                        "job_id": "c1b2a3d4-e5f6-7890-1234-567890abcdef",
+                        "result": {
+                            "analysis_timestamp_utc": "2024-05-21T11:01:05.123Z",
+                            "channel_id": "34020000001310000001",
+                            "device_id": "34020000001320000001",
+                            "events": [],
+                            "job_id": "c1b2a3d4-e5f6-7890-1234-567890abcdef",
+                            "video_window": {
+                                "stream_end_pts": 160.2,
+                                "stream_end_utc": "2024-05-21T11:00:59.999Z",
+                                "stream_start_pts": 100.3,
+                                "stream_start_utc": "2024-05-21T11:00:00.000Z"
+                            }
+                        },
+                        "status": "completed",
+                        "updated_at": "2024-05-21T11:01:00.000Z"
+                    }
+                ]
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            },
+            "VideoWindow": {
+                "properties": {
+                    "stream_start_utc": {
+                        "type": "string",
+                        "title": "Stream Start Utc",
+                        "description": "\u7a97\u53e3\u8d77\u59cb\u4e1c\u516b\u533a\u65f6\u95f4 (ISO 8601\u683c\u5f0f)"
+                    },
+                    "stream_end_utc": {
+                        "type": "string",
+                        "title": "Stream End Utc",
+                        "description": "\u7a97\u53e3\u7ed3\u675f\u4e1c\u516b\u533a\u65f6\u95f4 (ISO 8601\u683c\u5f0f)"
+                    },
+                    "stream_start_pts": {
+                        "type": "number",
+                        "title": "Stream Start Pts",
+                        "description": "\u7a97\u53e3\u7b2c\u4e00\u5e27\u7684PTS\u65f6\u95f4\u6233"
+                    },
+                    "stream_end_pts": {
+                        "type": "number",
+                        "title": "Stream End Pts",
+                        "description": "\u7a97\u53e3\u6700\u540e\u4e00\u5e27\u7684PTS\u65f6\u95f4\u6233"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "stream_start_utc",
+                    "stream_end_utc",
+                    "stream_start_pts",
+                    "stream_end_pts"
+                ],
+                "title": "VideoWindow",
+                "description": "\u8868\u793a\u89c6\u9891\u5206\u6790\u7a97\u53e3\u7684\u65f6\u95f4\u5750\u6807\u4fe1\u606f\u3002\n\n\u5305\u542b\u7a97\u53e3\u5728\u6574\u4e2a\u89c6\u9891\u6d41\u4e2d\u7684\u8d77\u59cb\u548c\u7ed3\u675f\u65f6\u95f4\uff0c\u4ee5\u4e1c\u516b\u533a\u65f6\u95f4\u548cPTS\u65f6\u95f4\u6233\u53cc\u91cd\u8868\u793a\u3002",
+                "example": {
+                    "stream_end_pts": 160.2,
+                    "stream_end_utc": "2024-05-21T19:00:59.999+08:00",
+                    "stream_start_pts": 100.3,
+                    "stream_start_utc": "2024-05-21T19:00:00.000+08:00"
+                }
+            }
+        }
+    }
+}
