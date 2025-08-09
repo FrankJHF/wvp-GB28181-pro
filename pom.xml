@@ -388,6 +388,39 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        
+        <!-- H2 Database for testing -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+        <!-- JSON Type Handler support -->
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis-spring</artifactId>
+            <version>2.0.7</version>
+        </dependency>
+        
+        <!-- Spring Retry - 生产环境依赖 -->
+        <dependency>
+            <groupId>org.springframework.retry</groupId>
+            <artifactId>spring-retry</artifactId>
+        </dependency>
+        
+        <!-- Spring AOP - Spring Retry需要 -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aspects</artifactId>
+        </dependency>
+        
+        <!-- MyBatis starter - 生产环境依赖 -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>2.2.2</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -436,7 +469,20 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.2</version>
                 <configuration>
-                    <skipTests>true</skipTests>
+                    <!-- 默认跳过测试，但可通过 -DskipTests=false 参数启用 -->
+                    <skipTests>${skipTests}</skipTests>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                    </includes>
+                    <!-- 测试失败不停止构建 -->
+                    <testFailureIgnore>false</testFailureIgnore>
+                    <!-- JVM参数 -->
+                    <argLine>
+                        -Dspring.profiles.active=test
+                        -Dfile.encoding=UTF-8
+                        -Xmx1024m
+                    </argLine>
                 </configuration>
             </plugin>
 

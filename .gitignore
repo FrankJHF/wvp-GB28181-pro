@@ -28,3 +28,14 @@ hs_err_pid*
 
 /src/main/resources/static/
 certificates
+
+# vscode
+.vscode/
+
+# ui
+.ui/
+
+# doc
+md_docs/
+
+

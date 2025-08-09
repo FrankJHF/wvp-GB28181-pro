@@ -93,3 +93,59 @@ user-settings:
   # 是否返回Date属性，true：不返回，避免摄像头通过该参数自动校时，false：返回，摄像头可能会根据该时间校时
   disable-date-header: false
 
+# VLM视频分析微服务配置
+vlm:
+  # [必须修改] VLM服务器地址
+  server:
+    # VLM服务的基础URL
+    base-url: http://localhost:8000
+    # 连接超时时间(毫秒)
+    connect-timeout: 10000
+    # 读取超时时间(毫秒)
+    read-timeout: 60000
+    # 重试次数
+    retry-count: 3
+  # 健康检查配置
+  health-check:
+    # 是否启用健康检查
+    enabled: true
+    # 健康检查间隔(分钟)
+    interval: 1
+    # 健康检查超时时间(毫秒)
+    timeout: 5000
+  # 任务配置
+  job:
+    # WVP回调接收地址，VLM会将分析结果发送到这个地址
+    callback-url: http://localhost:18080/api/vlm/callback
+    # 创建任务时是否自动启动
+    auto-start: true
+  # 默认分析配置
+  analysis:
+    # 推理间隔(秒)
+    inference-interval: 5
+    # 帧缓冲大小
+    frame-buffer-size: 180
+    # 采样帧率
+    sampling-fps: 5
+    # 最大新token数量
+    max-new-tokens: 180
+    # 默认分析模型名称
+    default-model-name: videollama3-fire-detection
+    # 默认分析提示词
+    default-prompt: 请分析视频中是否发生火灾或其他突发情况
+
+# 智能分析配置
+analysis:
+  # 快照图片存储配置
+  snapshot:
+    # [可选] 存储根路径
+    storage-path: ${user.home}/wvp-analysis/snapshots
+    # [可选] URL访问前缀，用于HTTP访问已保存的图片
+    url-prefix: /api/analysis/snapshots
+    # [可选] 文件保留天数，0表示不清理
+    retention-days: 30
+    # [可选] 是否启用文件清理任务
+    cleanup-enabled: true
+    # [可选] 文件清理任务执行时间（cron表达式，每天凌晨2点执行）
+    cleanup-cron: "0 0 2 * * ?"
+

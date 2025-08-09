@@ -12,7 +12,10 @@ public class WebSocketConfig {
     public ServerEndpointExporter serverEndpointExporter(){
         ServerEndpointExporter endpointExporter = new ServerEndpointExporter();
 
-        endpointExporter.setAnnotatedEndpointClasses(LogChannel.class);
+        endpointExporter.setAnnotatedEndpointClasses(
+                LogChannel.class,
+                AlarmChannel.class  // 智能分析告警推送端点
+        );
 
         return endpointExporter;
     }

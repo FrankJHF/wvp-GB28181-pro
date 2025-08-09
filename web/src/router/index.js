@@ -212,6 +212,32 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/analysis',
+    component: Layout,
+    name: '智能分析',
+    meta: { title: '智能分析', icon: 'analysis' },
+    children: [
+      {
+        path: '/analysis/cards',
+        name: 'AnalysisCards',
+        component: () => import('@/views/analysis/cards/index'),
+        meta: { title: '分析卡片', icon: 'form' }
+      },
+      {
+        path: '/analysis/tasks',
+        name: 'AnalysisTasks',
+        component: () => import('@/views/analysis/tasks/index'),
+        meta: { title: '分析任务', icon: 'operations' }
+      },
+      {
+        path: '/analysis/alarms',
+        name: 'AnalysisAlarms',
+        component: () => import('@/views/analysis/alarms/index'),
+        meta: { title: '智能告警', icon: 'eye-open' }
+      }
+    ]
+  },
+  {
     path: '/user',
     component: Layout,
     redirect: '/user',

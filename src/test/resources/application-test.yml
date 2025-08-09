@@ -1,0 +1,101 @@
+spring:
+  application:
+    name: wvp-test
+  profiles:
+    active: test
+  
+  # 测试环境数据源配置 - 使用H2内存数据库
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password: 
+    schema: classpath:schema-test.sql
+  
+  # H2数据库配置
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  # JPA配置  
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  
+  # Redis配置 - 测试环境使用内存实现
+  redis:
+    host: localhost
+    port: 16379
+    database: 15
+    password: 
+    timeout: 5000
+  
+  # 禁用Web环境中的随机端口  
+  web:
+    random-port: false
+
+# 测试服务器配置
+server:
+  port: 0  # 使用随机端口避免冲突
+  
+# VLM测试配置 - Mock服务
+vlm:
+  server:
+    base-url: http://localhost:8001
+    connect-timeout: 5000
+    read-timeout: 10000
+    retry-count: 1
+  health-check:
+    enabled: false
+  job:
+    callback-url: http://localhost:18080/api/vlm/callback
+    auto-start: false
+
+# 智能分析测试配置
+analysis:
+  snapshot:
+    storage-path: ${java.io.tmpdir}/wvp-test/snapshots
+    url-prefix: /api/analysis/snapshots
+    retention-days: 1
+    cleanup-enabled: false
+
+# SIP测试配置（禁用）
+sip:
+  port: 0
+  domain: 4101050000
+  id: 41010500002000000001
+  password: test123
+  alarm: false
+
+# 流媒体测试配置（禁用）  
+media:
+  id: test-media-server
+  ip: 127.0.0.1
+  http-port: 9092
+  rtp:
+    enable: false
+
+# 用户设置测试配置
+user-settings:
+  play-timeout: 5000
+  auto-apply-play: false
+  record-push-live: false
+  record-sip: false
+  stream-on-demand: false
+  
+# 日志配置
+logging:
+  level:
+    com.genersoft.iot.vmp: DEBUG
+    org.springframework.test: DEBUG
+    org.mybatis: DEBUG
+    org.h2: WARN
+    root: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
