@@ -7,6 +7,9 @@ import com.genersoft.iot.vmp.conf.UserSetting;
 import com.genersoft.iot.vmp.gb28181.bean.*;
 import com.genersoft.iot.vmp.gb28181.dao.CommonGBChannelMapper;
 import com.genersoft.iot.vmp.gb28181.service.*;
+import com.genersoft.iot.vmp.gb28181.service.IGbChannelPlayService;
+import com.genersoft.iot.vmp.gb28181.service.IPlayService;
+import com.genersoft.iot.vmp.jt1078.service.Ijt1078PlayService;
 import com.genersoft.iot.vmp.service.bean.ErrorCallback;
 import com.genersoft.iot.vmp.service.bean.InviteErrorCode;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +32,9 @@ public class GbChannelPlayServiceImpl implements IGbChannelPlayService {
 
     @Autowired
     private Map<String, ISourcePlayService> sourcePlayServiceMap;
+
+    @Autowired
+    private Ijt1078PlayService jt1078PlayService;
 
     @Autowired
     private Map<String, ISourcePlaybackService> sourcePlaybackServiceMap;
@@ -78,6 +84,8 @@ public class GbChannelPlayServiceImpl implements IGbChannelPlayService {
                 throw new PlayException(Response.BUSY_HERE, "channel not support");
         }
     }
+
+
 
     @Override
     public void play(CommonGBChannel channel, Platform platform, Boolean record, ErrorCallback<StreamInfo> callback) {

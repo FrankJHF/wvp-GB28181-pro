@@ -42,7 +42,6 @@ import {
   stopCruise,
   stopScan,
   wiper,
-  getAllForMap,
   stopPlayChannel,
   queryRecord,
   playback,
@@ -493,16 +492,6 @@ const actions = {
       })
     })
   },
-  getAllForMap({ commit }, params) {
-    return new Promise((resolve, reject) => {
-      getAllForMap(params).then(response => {
-        const { data } = response
-        resolve(data)
-      }).catch(error => {
-        reject(error)
-      })
-    })
-  },
   queryRecord({ commit }, params) {
     return new Promise((resolve, reject) => {
       queryRecord(params).then(response => {
@@ -555,7 +544,7 @@ const actions = {
   },
   seekPlayback({ commit }, params) {
     return new Promise((resolve, reject) => {
-      resumePlayback(params).then(response => {
+      seekPlayback(params).then(response => {
         const { data } = response
         resolve(data)
       }).catch(error => {

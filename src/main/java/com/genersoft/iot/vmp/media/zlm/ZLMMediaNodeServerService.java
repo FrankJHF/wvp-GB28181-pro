@@ -38,16 +38,21 @@ public class ZLMMediaNodeServerService implements IMediaNodeServerService {
 
     @Override
     public int createRTPServer(MediaServer mediaServer, String streamId, long ssrc, Integer port, Boolean onlyAuto, Boolean disableAudio, Boolean reUsePort, Integer tcpMode) {
-        return zlmServerFactory.createRTPServer(mediaServer, streamId, ssrc, port, onlyAuto, reUsePort, tcpMode);
-    }
-
-    @Override
-    public void closeRtpServer(MediaServer mediaServer, String streamId) {
-        zlmServerFactory.closeRtpServer(mediaServer, streamId);
+        return zlmServerFactory.createRTPServer(mediaServer, "rtp", streamId, ssrc, port, onlyAuto, disableAudio, reUsePort, tcpMode);
     }
 
     @Override
     public void closeRtpServer(MediaServer mediaServer, String streamId, CommonCallback<Boolean> callback) {
+        zlmServerFactory.closeRtpServer(mediaServer, streamId, callback);
+    }
+
+    @Override
+    public int createJTTServer(MediaServer mediaServer, String streamId, Integer port, Boolean disableVideo, Boolean disableAudio, Integer tcpMode) {
+        return zlmServerFactory.createRTPServer(mediaServer, "1078", streamId, 0, port, disableVideo, disableAudio, false, tcpMode);
+    }
+
+    @Override
+    public void closeJTTServer(MediaServer mediaServer, String streamId, CommonCallback<Boolean> callback) {
         zlmServerFactory.closeRtpServer(mediaServer, streamId, callback);
     }
 
@@ -250,7 +255,13 @@ public class ZLMMediaNodeServerService implements IMediaNodeServerService {
     }
 
     @Override
-    public void getSnap(MediaServer mediaServer, String streamUrl, int timeoutSec, int expireSec, String path, String fileName) {
+    public void getSnap(MediaServer mediaServer, String app, String stream, int timeoutSec, int expireSec, String path, String fileName) {
+        String streamUrl;
+        if (mediaServer.getRtspPort() != 0) {
+            streamUrl = String.format("rtsp://127.0.0.1:%s/%s/%s", mediaServer.getRtspPort(), "rtp", stream);
+        } else {
+            streamUrl = String.format("http://127.0.0.1:%s/%s/%s.live.mp4", mediaServer.getHttpPort(), "rtp", stream);
+        }
         zlmresTfulUtils.getSnap(mediaServer, streamUrl, timeoutSec, expireSec, path, fileName);
     }
 
@@ -412,6 +423,29 @@ public class ZLMMediaNodeServerService implements IMediaNodeServerService {
             throw new ControllerException(jsonObject.getInteger("code"), jsonObject.getString("msg"));
         }
         log.info("[推流结果]：{} ，参数： {}",jsonObject, JSONObject.toJSONString(param));
+    }
+
+    @Override
+    public Integer startSendRtpTalk(MediaServer mediaServer, SendRtpInfo sendRtpItem, Integer timeout) {
+        Map<String, Object> param = new HashMap<>(12);
+        param.put("vhost","__defaultVhost__");
+        param.put("app", sendRtpItem.getApp());
+        param.put("stream", sendRtpItem.getStream());
+        param.put("ssrc", sendRtpItem.getSsrc());
+        param.put("pt", sendRtpItem.getPt());
+        param.put("type", sendRtpItem.isUsePs() ? "1" : "0");
+        param.put("only_audio", sendRtpItem.isOnlyAudio() ? "1" : "0");
+        param.put("recv_stream_id", sendRtpItem.getReceiveStream());
+
+        JSONObject jsonObject = zlmServerFactory.startSendRtpTalk(mediaServer, param, null);
+        if (jsonObject == null || jsonObject.getInteger("code") != 0 ) {
+            log.error("启动监听TCP被动推流失败: {}, 参数：{}", jsonObject.getString("msg"), JSON.toJSONString(param));
+            throw new ControllerException(jsonObject.getInteger("code"), jsonObject.getString("msg"));
+        }
+        log.info("调用ZLM-TCP被动推流接口, 结果： {}",  jsonObject);
+        log.info("启动监听TCP被动推流成功[ {}/{} ]，{}->{}:{}, " , sendRtpItem.getApp(), sendRtpItem.getStream(),
+                jsonObject.getString("local_port"), param.get("dst_url"), param.get("dst_port"));
+        return jsonObject.getInteger("local_port");
     }
 
     @Override

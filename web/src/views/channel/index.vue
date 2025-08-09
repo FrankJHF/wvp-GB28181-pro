@@ -230,6 +230,7 @@ export default {
       this.getChannelList()
     },
     getChannelList: function() {
+      this.channelList = []
       this.$store.dispatch('commonChanel/getList', {
         page: this.currentPage,
         count: this.count,
