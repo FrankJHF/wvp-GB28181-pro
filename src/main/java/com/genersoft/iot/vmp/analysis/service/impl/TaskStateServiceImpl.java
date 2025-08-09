@@ -45,7 +45,12 @@ public class TaskStateServiceImpl implements ITaskStateService {
     @Async("taskExecutor")
     public CompletableFuture<Void> startTask(String taskId, boolean forceRestart) {
         return CompletableFuture.runAsync(() -> {
-            performTaskAction(taskId, TaskAction.START, forceRestart);
+            try {
+                performTaskAction(taskId, TaskAction.START, forceRestart);
+            } catch (ServiceException e) {
+                log.error("启动任务失败，任务ID: {}", taskId, e);
+                throw new RuntimeException(e);
+            }
         });
     }
 
@@ -53,7 +58,12 @@ public class TaskStateServiceImpl implements ITaskStateService {
     @Async("taskExecutor")
     public CompletableFuture<Void> pauseTask(String taskId) {
         return CompletableFuture.runAsync(() -> {
-            performTaskAction(taskId, TaskAction.PAUSE, false);
+            try {
+                performTaskAction(taskId, TaskAction.PAUSE, false);
+            } catch (ServiceException e) {
+                log.error("暂停任务失败，任务ID: {}", taskId, e);
+                throw new RuntimeException(e);
+            }
         });
     }
 
@@ -61,7 +71,12 @@ public class TaskStateServiceImpl implements ITaskStateService {
     @Async("taskExecutor")
     public CompletableFuture<Void> resumeTask(String taskId) {
         return CompletableFuture.runAsync(() -> {
-            performTaskAction(taskId, TaskAction.RESUME, false);
+            try {
+                performTaskAction(taskId, TaskAction.RESUME, false);
+            } catch (ServiceException e) {
+                log.error("恢复任务失败，任务ID: {}", taskId, e);
+                throw new RuntimeException(e);
+            }
         });
     }
 
@@ -69,12 +84,17 @@ public class TaskStateServiceImpl implements ITaskStateService {
     @Async("taskExecutor")
     public CompletableFuture<Void> stopTask(String taskId) {
         return CompletableFuture.runAsync(() -> {
-            performTaskAction(taskId, TaskAction.STOP, false);
+            try {
+                performTaskAction(taskId, TaskAction.STOP, false);
+            } catch (ServiceException e) {
+                log.error("停止任务失败，任务ID: {}", taskId, e);
+                throw new RuntimeException(e);
+            }
         });
     }
 
     @Override
-    public TaskStatus syncTaskStatus(String taskId) {
+    public TaskStatus syncTaskStatus(String taskId) throws ServiceException {
         log.debug("同步任务状态，任务ID: {}", taskId);
         
         if (StringUtils.isEmpty(taskId)) {
@@ -180,7 +200,7 @@ public class TaskStateServiceImpl implements ITaskStateService {
     }
 
     @Override
-    public TaskStatus getTaskStatus(String taskId) {
+    public TaskStatus getTaskStatus(String taskId) throws ServiceException {
         if (StringUtils.isEmpty(taskId)) {
             throw new ServiceException("任务ID不能为空");
         }
@@ -253,7 +273,7 @@ public class TaskStateServiceImpl implements ITaskStateService {
      * @param action 操作类型
      * @param forceRestart 是否强制重启（仅对启动操作有效）
      */
-    private void performTaskAction(String taskId, TaskAction action, boolean forceRestart) {
+    private void performTaskAction(String taskId, TaskAction action, boolean forceRestart) throws ServiceException {
         log.info("执行任务操作，任务ID: {}, 操作: {}", taskId, action.getDescription());
         
         if (StringUtils.isEmpty(taskId)) {
@@ -334,7 +354,7 @@ public class TaskStateServiceImpl implements ITaskStateService {
     /**
      * 调用VLM服务
      */
-    private VLMJobActionResponse callVlmService(String vlmJobId, TaskAction action, boolean forceRestart) {
+    private VLMJobActionResponse callVlmService(String vlmJobId, TaskAction action, boolean forceRestart) throws ServiceException {
         switch (action) {
             case START:
                 return vlmClientService.startJob(vlmJobId, forceRestart);

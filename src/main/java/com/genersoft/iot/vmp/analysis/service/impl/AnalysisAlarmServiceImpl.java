@@ -42,7 +42,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AnalysisAlarm createAlarm(AnalysisAlarm alarm) {
+    public AnalysisAlarm createAlarm(AnalysisAlarm alarm) throws ServiceException {
         log.info("创建分析告警: {}", alarm.getDescription());
         
         // 验证必填字段
@@ -77,7 +77,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean updateAlarmStatus(String alarmId, AlarmStatus status) {
+    public boolean updateAlarmStatus(String alarmId, AlarmStatus status) throws ServiceException {
         log.info("更新告警状态，告警ID: {}, 状态: {}", alarmId, status.getDescription());
         
         if (StringUtils.isEmpty(alarmId)) {
@@ -107,7 +107,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int batchUpdateAlarmStatus(List<String> alarmIds, AlarmStatus status) {
+    public int batchUpdateAlarmStatus(List<String> alarmIds, AlarmStatus status) throws ServiceException {
         log.info("批量更新告警状态，数量: {}, 状态: {}", alarmIds.size(), status.getDescription());
         
         if (alarmIds == null || alarmIds.isEmpty()) {
@@ -126,7 +126,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean deleteAlarm(String alarmId) {
+    public boolean deleteAlarm(String alarmId) throws ServiceException {
         log.info("删除分析告警: {}", alarmId);
         
         if (StringUtils.isEmpty(alarmId)) {
@@ -164,7 +164,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
     }
 
     @Override
-    public AnalysisAlarm getAlarmById(String alarmId) {
+    public AnalysisAlarm getAlarmById(String alarmId) throws ServiceException {
         if (StringUtils.isEmpty(alarmId)) {
             throw new ServiceException("告警ID不能为空");
         }
@@ -173,7 +173,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
     }
 
     @Override
-    public AnalysisAlarm getAlarmWithDetailsById(String alarmId) {
+    public AnalysisAlarm getAlarmWithDetailsById(String alarmId) throws ServiceException {
         AnalysisAlarm alarm = getAlarmById(alarmId);
         if (alarm != null) {
             // 加载关联的任务信息
@@ -184,7 +184,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
     }
 
     @Override
-    public List<AnalysisAlarm> getAlarmsByTaskId(String taskId) {
+    public List<AnalysisAlarm> getAlarmsByTaskId(String taskId) throws ServiceException {
         if (StringUtils.isEmpty(taskId)) {
             throw new ServiceException("任务ID不能为空");
         }
@@ -193,7 +193,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
     }
 
     @Override
-    public List<AnalysisAlarm> getAlarmsByDeviceAndChannel(String deviceId, String channelId) {
+    public List<AnalysisAlarm> getAlarmsByDeviceAndChannel(String deviceId, String channelId) throws ServiceException {
         if (StringUtils.isEmpty(deviceId) || StringUtils.isEmpty(channelId)) {
             throw new ServiceException("设备ID和通道ID不能为空");
         }
@@ -204,7 +204,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
     @Override
     public PageInfo<AnalysisAlarm> getAlarmPage(int pageNum, int pageSize, LocalDateTime startTime, LocalDateTime endTime,
                                                String deviceId, String channelId, String analysisType, 
-                                               String status, String taskId) {
+                                               String status, String taskId) throws ServiceException {
         log.debug("分页查询分析告警，页码: {}, 页面大小: {}", pageNum, pageSize);
         
         PageHelper.startPage(pageNum, pageSize);
@@ -215,7 +215,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
     }
 
     @Override
-    public List<AnalysisAlarm> getRecentAlarms(int limit) {
+    public List<AnalysisAlarm> getRecentAlarms(int limit) throws ServiceException {
         if (limit <= 0) {
             limit = 10;
         }
@@ -224,18 +224,18 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
     }
 
     @Override
-    public List<AnalysisAlarm> getPendingAlarms() {
+    public List<AnalysisAlarm> getPendingAlarms() throws ServiceException {
         return analysisAlarmMapper.selectPending();
     }
 
     @Override
     public long countAlarms(LocalDateTime startTime, LocalDateTime endTime, String deviceId, String channelId,
-                           String analysisType, String status, String taskId) {
+                           String analysisType, String status, String taskId) throws ServiceException {
         return analysisAlarmMapper.count(startTime, endTime, deviceId, channelId, analysisType, status, taskId);
     }
 
     @Override
-    public long countAlarmsByTaskId(String taskId) {
+    public long countAlarmsByTaskId(String taskId) throws ServiceException {
         if (StringUtils.isEmpty(taskId)) {
             throw new ServiceException("任务ID不能为空");
         }
@@ -244,7 +244,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
     }
 
     @Override
-    public Map<String, Long> countAlarmsByStatus(LocalDateTime startTime, LocalDateTime endTime) {
+    public Map<String, Long> countAlarmsByStatus(LocalDateTime startTime, LocalDateTime endTime) throws ServiceException {
         List<Map<String, Object>> statusCounts = analysisAlarmMapper.countByStatus(startTime, endTime);
         
         Map<String, Long> result = new HashMap<>();
@@ -259,7 +259,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int batchDeleteAlarms(List<String> alarmIds) {
+    public int batchDeleteAlarms(List<String> alarmIds) throws ServiceException {
         log.info("批量删除分析告警，数量: {}", alarmIds.size());
         
         if (alarmIds == null || alarmIds.isEmpty()) {
@@ -283,7 +283,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int deleteAlarmsByTaskId(String taskId) {
+    public int deleteAlarmsByTaskId(String taskId) throws ServiceException {
         log.info("删除任务关联告警，任务ID: {}", taskId);
         
         if (StringUtils.isEmpty(taskId)) {
@@ -315,7 +315,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int cleanupAlarmsBeforeTime(LocalDateTime beforeTime) {
+    public int cleanupAlarmsBeforeTime(LocalDateTime beforeTime) throws ServiceException {
         log.info("清理历史告警，时间阈值: {}", beforeTime);
         
         if (beforeTime == null) {
@@ -332,20 +332,20 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean processAlarm(String alarmId) {
+    public boolean processAlarm(String alarmId) throws ServiceException {
         log.info("处理告警，告警ID: {}", alarmId);
         return updateAlarmStatus(alarmId, AlarmStatus.RESOLVED);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean ignoreAlarm(String alarmId) {
+    public boolean ignoreAlarm(String alarmId) throws ServiceException {
         log.info("忽略告警，告警ID: {}", alarmId);
         return updateAlarmStatus(alarmId, AlarmStatus.IGNORED);
     }
 
     @Override
-    public void sendAlarmNotification(AnalysisAlarm alarm) {
+    public void sendAlarmNotification(AnalysisAlarm alarm) throws ServiceException {
         try {
             // TODO: 集成WebSocket服务发送实时通知
             // TODO: 集成邮件服务发送邮件通知
@@ -360,7 +360,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
     }
 
     @Override
-    public String getSnapshotPath(String alarmId) {
+    public String getSnapshotPath(String alarmId) throws ServiceException {
         if (StringUtils.isEmpty(alarmId)) {
             return null;
         }
@@ -370,7 +370,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
     }
 
     @Override
-    public boolean isSnapshotExists(String alarmId) {
+    public boolean isSnapshotExists(String alarmId) throws ServiceException {
         String snapshotPath = getSnapshotPath(alarmId);
         
         if (StringUtils.isEmpty(snapshotPath)) {
@@ -389,7 +389,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
     /**
      * 验证分析告警数据
      */
-    private void validateAlarm(AnalysisAlarm alarm, boolean isCreate) {
+    private void validateAlarm(AnalysisAlarm alarm, boolean isCreate) throws ServiceException {
         if (alarm == null) {
             throw new ServiceException("分析告警信息不能为空");
         }

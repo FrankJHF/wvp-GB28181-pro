@@ -35,7 +35,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AnalysisCard createCard(AnalysisCard card) {
+    public AnalysisCard createCard(AnalysisCard card) throws ServiceException {
         log.info("创建分析卡片: {}", card.getTitle());
         
         // 验证必填字段
@@ -67,7 +67,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AnalysisCard updateCard(AnalysisCard card) {
+    public AnalysisCard updateCard(AnalysisCard card) throws ServiceException {
         log.info("更新分析卡片: {}", card.getId());
         
         // 验证必填字段
@@ -90,7 +90,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean deleteCard(String cardId) {
+    public boolean deleteCard(String cardId) throws ServiceException {
         log.info("删除分析卡片: {}", cardId);
         
         if (StringUtils.isEmpty(cardId)) {
@@ -119,7 +119,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
     }
 
     @Override
-    public AnalysisCard getCardById(String cardId) {
+    public AnalysisCard getCardById(String cardId) throws ServiceException {
         if (StringUtils.isEmpty(cardId)) {
             throw new ServiceException("卡片ID不能为空");
         }
@@ -128,7 +128,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
     }
 
     @Override
-    public AnalysisCard getCardByIdWithPermission(String cardId, boolean hidePrompt) {
+    public AnalysisCard getCardByIdWithPermission(String cardId, boolean hidePrompt) throws ServiceException {
         AnalysisCard card = getCardById(cardId);
         
         if (card != null && hidePrompt) {
@@ -140,7 +140,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
     }
 
     @Override
-    public PageInfo<AnalysisCard> getCardPage(int pageNum, int pageSize, Boolean enabled, String createdBy, String title) {
+    public PageInfo<AnalysisCard> getCardPage(int pageNum, int pageSize, Boolean enabled, String createdBy, String title) throws ServiceException {
         log.debug("分页查询分析卡片，页码: {}, 页面大小: {}", pageNum, pageSize);
         
         PageHelper.startPage(pageNum, pageSize);
@@ -150,12 +150,12 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
     }
 
     @Override
-    public List<AnalysisCard> getEnabledCards() {
+    public List<AnalysisCard> getEnabledCards() throws ServiceException {
         return analysisCardMapper.selectEnabled();
     }
 
     @Override
-    public List<AnalysisCard> getCardsByCreatedBy(String createdBy) {
+    public List<AnalysisCard> getCardsByCreatedBy(String createdBy) throws ServiceException {
         if (StringUtils.isEmpty(createdBy)) {
             throw new ServiceException("创建人不能为空");
         }
@@ -165,7 +165,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean enableCard(String cardId, boolean enabled) {
+    public boolean enableCard(String cardId, boolean enabled) throws ServiceException {
         log.info("{}分析卡片: {}", enabled ? "启用" : "禁用", cardId);
         
         if (StringUtils.isEmpty(cardId)) {
@@ -192,7 +192,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int batchEnableCards(List<String> cardIds, boolean enabled) {
+    public int batchEnableCards(List<String> cardIds, boolean enabled) throws ServiceException {
         log.info("批量{}分析卡片，数量: {}", enabled ? "启用" : "禁用", cardIds.size());
         
         if (cardIds == null || cardIds.isEmpty()) {
@@ -206,7 +206,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
     }
 
     @Override
-    public boolean canDeleteCard(String cardId) {
+    public boolean canDeleteCard(String cardId) throws ServiceException {
         if (StringUtils.isEmpty(cardId)) {
             return false;
         }
@@ -217,13 +217,13 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
     }
 
     @Override
-    public long countCards(Boolean enabled, String createdBy) {
+    public long countCards(Boolean enabled, String createdBy) throws ServiceException {
         return analysisCardMapper.count(enabled, createdBy);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AnalysisCard copyCard(String cardId, String newTitle, String createdBy) {
+    public AnalysisCard copyCard(String cardId, String newTitle, String createdBy) throws ServiceException {
         log.info("复制分析卡片，源ID: {}, 新标题: {}", cardId, newTitle);
         
         if (StringUtils.isEmpty(cardId)) {
@@ -273,7 +273,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
      * @param card 分析卡片
      * @param isCreate 是否为创建操作
      */
-    private void validateCard(AnalysisCard card, boolean isCreate) {
+    private void validateCard(AnalysisCard card, boolean isCreate) throws ServiceException {
         if (card == null) {
             throw new ServiceException("分析卡片信息不能为空");
         }

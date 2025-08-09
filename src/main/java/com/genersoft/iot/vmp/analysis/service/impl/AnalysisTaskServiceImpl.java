@@ -62,7 +62,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AnalysisTask createTask(AnalysisTask task) {
+    public AnalysisTask createTask(AnalysisTask task) throws ServiceException {
         log.info("创建分析任务: {}", task.getTaskName());
         
         // 验证必填字段
@@ -125,7 +125,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AnalysisTask updateTask(AnalysisTask task) {
+    public AnalysisTask updateTask(AnalysisTask task) throws ServiceException {
         log.info("更新分析任务: {}", task.getId());
         
         // 验证必填字段
@@ -153,7 +153,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean deleteTask(String taskId) {
+    public boolean deleteTask(String taskId) throws ServiceException {
         log.info("删除分析任务: {}", taskId);
         
         if (StringUtils.isEmpty(taskId)) {
@@ -191,7 +191,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
     }
 
     @Override
-    public AnalysisTask getTaskById(String taskId) {
+    public AnalysisTask getTaskById(String taskId) throws ServiceException {
         if (StringUtils.isEmpty(taskId)) {
             throw new ServiceException("任务ID不能为空");
         }
@@ -200,7 +200,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
     }
 
     @Override
-    public AnalysisTask getTaskWithDetailsById(String taskId) {
+    public AnalysisTask getTaskWithDetailsById(String taskId) throws ServiceException {
         AnalysisTask task = getTaskById(taskId);
         if (task != null) {
             // 加载关联的分析卡片信息
@@ -211,7 +211,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
     }
 
     @Override
-    public AnalysisTask getTaskByVlmJobId(String vlmJobId) {
+    public AnalysisTask getTaskByVlmJobId(String vlmJobId) throws ServiceException {
         if (StringUtils.isEmpty(vlmJobId)) {
             throw new ServiceException("VLM作业ID不能为空");
         }
@@ -221,7 +221,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
     @Override
     public PageInfo<AnalysisTask> getTaskPage(int pageNum, int pageSize, String deviceId, String channelId,
-                                             String analysisCardId, String status, String createdBy, String taskName) {
+                                             String analysisCardId, String status, String createdBy, String taskName) throws ServiceException {
         log.debug("分页查询分析任务，页码: {}, 页面大小: {}", pageNum, pageSize);
         
         PageHelper.startPage(pageNum, pageSize);
@@ -232,7 +232,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
     }
 
     @Override
-    public List<AnalysisTask> getTasksByDeviceAndChannel(String deviceId, String channelId) {
+    public List<AnalysisTask> getTasksByDeviceAndChannel(String deviceId, String channelId) throws ServiceException {
         if (StringUtils.isEmpty(deviceId) || StringUtils.isEmpty(channelId)) {
             throw new ServiceException("设备ID和通道ID不能为空");
         }
@@ -290,7 +290,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int batchDeleteTasks(List<String> taskIds) {
+    public int batchDeleteTasks(List<String> taskIds) throws ServiceException {
         log.info("批量删除分析任务，数量: {}", taskIds.size());
         
         if (taskIds == null || taskIds.isEmpty()) {
@@ -313,7 +313,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
     }
 
     @Override
-    public boolean canCreateTask(String deviceId, String channelId, String analysisCardId) {
+    public boolean canCreateTask(String deviceId, String channelId, String analysisCardId) throws ServiceException {
         if (StringUtils.isEmpty(deviceId) || StringUtils.isEmpty(channelId) || StringUtils.isEmpty(analysisCardId)) {
             return false;
         }
@@ -327,7 +327,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
     }
 
     @Override
-    public String getDeviceChannelRtspUrl(String deviceId, String channelId) {
+    public String getDeviceChannelRtspUrl(String deviceId, String channelId) throws ServiceException {
         // TODO: 集成WVP现有的设备服务获取RTSP流地址
         // 这里应该调用WVP现有的设备服务来获取真实的RTSP地址
         // Device device = deviceService.getDevice(deviceId);
@@ -340,7 +340,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
     }
 
     @Override
-    public boolean validateDeviceChannel(String deviceId, String channelId) {
+    public boolean validateDeviceChannel(String deviceId, String channelId) throws ServiceException {
         // TODO: 集成WVP现有的设备服务验证设备通道
         // Device device = deviceService.getDevice(deviceId);
         // if (device == null || !device.getOnLine()) {
@@ -374,7 +374,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
     /**
      * 验证分析任务数据
      */
-    private void validateTask(AnalysisTask task, boolean isCreate) {
+    private void validateTask(AnalysisTask task, boolean isCreate) throws ServiceException {
         if (task == null) {
             throw new ServiceException("分析任务信息不能为空");
         }

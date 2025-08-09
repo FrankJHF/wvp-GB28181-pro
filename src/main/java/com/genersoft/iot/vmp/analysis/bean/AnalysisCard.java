@@ -49,6 +49,10 @@ public class AnalysisCard {
     @JsonProperty("created_by")
     private String createdBy;
 
+    @Schema(description = "更新人")
+    @JsonProperty("updated_by")
+    private String updatedBy;
+
     @Schema(description = "创建时间")
     @JsonProperty("created_at")
     private LocalDateTime createdAt;

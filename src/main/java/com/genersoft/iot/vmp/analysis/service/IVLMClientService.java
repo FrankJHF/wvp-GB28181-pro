@@ -3,6 +3,7 @@ package com.genersoft.iot.vmp.analysis.service;
 import com.genersoft.iot.vmp.analysis.bean.dto.VLMJobRequest;
 import com.genersoft.iot.vmp.analysis.bean.dto.VLMJobResponse;
 import com.genersoft.iot.vmp.analysis.bean.dto.VLMJobActionResponse;
+import com.genersoft.iot.vmp.conf.exception.ServiceException;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -18,7 +19,7 @@ public interface IVLMClientService {
      * @return VLM作业响应
      */
     @Schema(description = "创建VLM分析作业")
-    VLMJobResponse createJob(VLMJobRequest request, boolean autoStart);
+    VLMJobResponse createJob(VLMJobRequest request, boolean autoStart) throws ServiceException;
 
     /**
      * 启动VLM作业
@@ -27,7 +28,7 @@ public interface IVLMClientService {
      * @return 作业操作响应
      */
     @Schema(description = "启动VLM作业")
-    VLMJobActionResponse startJob(String jobId, boolean forceRestart);
+    VLMJobActionResponse startJob(String jobId, boolean forceRestart) throws ServiceException;
 
     /**
      * 暂停VLM作业
@@ -35,7 +36,7 @@ public interface IVLMClientService {
      * @return 作业操作响应
      */
     @Schema(description = "暂停VLM作业")
-    VLMJobActionResponse pauseJob(String jobId);
+    VLMJobActionResponse pauseJob(String jobId) throws ServiceException;
 
     /**
      * 恢复VLM作业
@@ -43,7 +44,7 @@ public interface IVLMClientService {
      * @return 作业操作响应
      */
     @Schema(description = "恢复VLM作业")
-    VLMJobActionResponse resumeJob(String jobId);
+    VLMJobActionResponse resumeJob(String jobId) throws ServiceException;
 
     /**
      * 停止VLM作业
@@ -51,7 +52,7 @@ public interface IVLMClientService {
      * @return 作业操作响应
      */
     @Schema(description = "停止VLM作业")
-    VLMJobActionResponse stopJob(String jobId);
+    VLMJobActionResponse stopJob(String jobId) throws ServiceException;
 
     /**
      * 查询VLM作业状态
@@ -59,7 +60,7 @@ public interface IVLMClientService {
      * @return VLM作业响应
      */
     @Schema(description = "查询VLM作业状态")
-    VLMJobResponse getJobStatus(String jobId);
+    VLMJobResponse getJobStatus(String jobId) throws ServiceException;
 
     /**
      * 检查VLM微服务健康状态

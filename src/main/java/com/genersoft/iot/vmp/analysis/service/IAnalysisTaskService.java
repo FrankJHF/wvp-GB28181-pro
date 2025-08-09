@@ -2,6 +2,7 @@ package com.genersoft.iot.vmp.analysis.service;
 
 import com.genersoft.iot.vmp.analysis.bean.AnalysisTask;
 import com.genersoft.iot.vmp.analysis.bean.TaskStatus;
+import com.genersoft.iot.vmp.conf.exception.ServiceException;
 import com.github.pagehelper.PageInfo;
 
 import java.util.List;
@@ -18,42 +19,42 @@ public interface IAnalysisTaskService {
      * @param task 分析任务信息
      * @return 创建成功的任务
      */
-    AnalysisTask createTask(AnalysisTask task);
+    AnalysisTask createTask(AnalysisTask task) throws ServiceException;
 
     /**
      * 更新分析任务
      * @param task 分析任务信息
      * @return 更新成功的任务
      */
-    AnalysisTask updateTask(AnalysisTask task);
+    AnalysisTask updateTask(AnalysisTask task) throws ServiceException;
 
     /**
      * 删除分析任务
      * @param taskId 任务ID
      * @return 是否删除成功
      */
-    boolean deleteTask(String taskId);
+    boolean deleteTask(String taskId) throws ServiceException;
 
     /**
      * 根据ID查询分析任务
      * @param taskId 任务ID
      * @return 分析任务
      */
-    AnalysisTask getTaskById(String taskId);
+    AnalysisTask getTaskById(String taskId) throws ServiceException;
 
     /**
      * 根据ID查询分析任务（包含关联信息）
      * @param taskId 任务ID
      * @return 分析任务
      */
-    AnalysisTask getTaskWithDetailsById(String taskId);
+    AnalysisTask getTaskWithDetailsById(String taskId) throws ServiceException;
 
     /**
      * 根据VLM作业ID查询任务
      * @param vlmJobId VLM作业ID
      * @return 分析任务
      */
-    AnalysisTask getTaskByVlmJobId(String vlmJobId);
+    AnalysisTask getTaskByVlmJobId(String vlmJobId) throws ServiceException;
 
     /**
      * 分页查询分析任务
@@ -68,7 +69,7 @@ public interface IAnalysisTaskService {
      * @return 分页结果
      */
     PageInfo<AnalysisTask> getTaskPage(int pageNum, int pageSize, String deviceId, String channelId,
-                                      String analysisCardId, String status, String createdBy, String taskName);
+                                      String analysisCardId, String status, String createdBy, String taskName) throws ServiceException;
 
     /**
      * 根据设备和通道查询任务
@@ -76,7 +77,7 @@ public interface IAnalysisTaskService {
      * @param channelId 通道ID
      * @return 任务列表
      */
-    List<AnalysisTask> getTasksByDeviceAndChannel(String deviceId, String channelId);
+    List<AnalysisTask> getTasksByDeviceAndChannel(String deviceId, String channelId) throws ServiceException;
 
     /**
      * 根据状态查询任务
@@ -141,7 +142,7 @@ public interface IAnalysisTaskService {
      * @param taskIds 任务ID列表
      * @return 删除成功的数量
      */
-    int batchDeleteTasks(List<String> taskIds);
+    int batchDeleteTasks(List<String> taskIds) throws ServiceException;
 
     /**
      * 检查设备通道是否可以创建新任务
@@ -150,7 +151,7 @@ public interface IAnalysisTaskService {
      * @param analysisCardId 分析卡片ID
      * @return 是否可以创建
      */
-    boolean canCreateTask(String deviceId, String channelId, String analysisCardId);
+    boolean canCreateTask(String deviceId, String channelId, String analysisCardId) throws ServiceException;
 
     /**
      * 获取设备通道的RTSP流地址
@@ -158,7 +159,7 @@ public interface IAnalysisTaskService {
      * @param channelId 通道ID
      * @return RTSP流地址
      */
-    String getDeviceChannelRtspUrl(String deviceId, String channelId);
+    String getDeviceChannelRtspUrl(String deviceId, String channelId) throws ServiceException;
 
     /**
      * 验证设备通道的有效性
@@ -166,5 +167,5 @@ public interface IAnalysisTaskService {
      * @param channelId 通道ID
      * @return 是否有效
      */
-    boolean validateDeviceChannel(String deviceId, String channelId);
+    boolean validateDeviceChannel(String deviceId, String channelId) throws ServiceException;
 }

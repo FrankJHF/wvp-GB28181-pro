@@ -3,6 +3,7 @@ package com.genersoft.iot.vmp.analysis.service;
 import com.genersoft.iot.vmp.analysis.bean.AnalysisTask;
 import com.genersoft.iot.vmp.analysis.bean.TaskAction;
 import com.genersoft.iot.vmp.analysis.bean.TaskStatus;
+import com.genersoft.iot.vmp.conf.exception.ServiceException;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -46,7 +47,7 @@ public interface ITaskStateService {
      * @param taskId 任务ID
      * @return 同步后的任务状态
      */
-    TaskStatus syncTaskStatus(String taskId);
+    TaskStatus syncTaskStatus(String taskId) throws ServiceException;
 
     /**
      * 同步所有活跃任务状态
@@ -66,7 +67,7 @@ public interface ITaskStateService {
      * @param taskId 任务ID
      * @return 任务状态
      */
-    TaskStatus getTaskStatus(String taskId);
+    TaskStatus getTaskStatus(String taskId) throws ServiceException;
 
     /**
      * 检查任务是否可以执行指定操作

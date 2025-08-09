@@ -59,7 +59,7 @@ public class VLMCallbackProcessor {
      */
     @Async("taskExecutor")
     @Retryable(value = {Exception.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public void processCallback(VLMAnalysisResult callback) {
+    public void processCallback(VLMAnalysisResult callback) throws Exception {
         log.info("开始处理VLM回调数据，作业ID: {}, 设备ID: {}, 通道ID: {}", 
                 callback.getJobId(), callback.getDeviceId(), callback.getChannelId());
         

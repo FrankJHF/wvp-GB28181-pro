@@ -54,7 +54,7 @@ public class AnalysisCardController {
         
         try {
             PageInfo<AnalysisCard> pageResult = analysisCardService.getCardPage(
-                    page, count, title, enabled, modelType, createdBy);
+                    page, count, enabled, createdBy, title);
             
             // 根据用户权限过滤敏感信息
             String currentUser = SecurityUtils.getUserInfo() != null ? SecurityUtils.getUserInfo().getUsername() : "unknown";
@@ -246,7 +246,7 @@ public class AnalysisCardController {
         }
         
         try {
-            boolean success = analysisCardService.toggleCardEnabled(cardId, enabled);
+            boolean success = analysisCardService.enableCard(cardId, enabled);
             if (!success) {
                 throw new ControllerException(ErrorCode.ERROR500.getCode(), 
                         enabled ? "启用分析卡片失败" : "禁用分析卡片失败");
@@ -279,12 +279,12 @@ public class AnalysisCardController {
         try {
             // 只查询启用的卡片
             PageInfo<AnalysisCard> pageResult = analysisCardService.getCardPage(
-                    page, count, null, true, null, null);
+                    page, count, true, null, null);
             
             // 对所有用户隐藏敏感信息
             pageResult.getList().forEach(card -> {
                 card.setPrompt("");
-                card.setAnalysisConfig("");
+                card.setAnalysisConfig(null);
             });
             
             return WVPResult.success(pageResult, "查询成功");

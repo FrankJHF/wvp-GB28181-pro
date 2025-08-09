@@ -4,6 +4,7 @@ import com.genersoft.iot.vmp.analysis.bean.AnalysisTask;
 import com.genersoft.iot.vmp.analysis.bean.TaskStatus;
 import com.genersoft.iot.vmp.analysis.service.IAnalysisTaskService;
 import com.genersoft.iot.vmp.conf.exception.ControllerException;
+import com.genersoft.iot.vmp.conf.exception.ServiceException;
 import com.genersoft.iot.vmp.conf.security.JwtUtils;
 import com.genersoft.iot.vmp.conf.security.SecurityUtils;
 import com.genersoft.iot.vmp.vmanager.bean.ErrorCode;
@@ -496,7 +497,7 @@ public class AnalysisTaskController {
     /**
      * 检查任务权限
      */
-    private void checkTaskPermission(String taskId) {
+    private void checkTaskPermission(String taskId) throws ServiceException {
         AnalysisTask existingTask = analysisTaskService.getTaskById(taskId);
         if (existingTask == null) {
             throw new ControllerException(ErrorCode.ERROR404.getCode(), "分析任务不存在");

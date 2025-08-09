@@ -47,7 +47,7 @@ public class VLMClientServiceImpl implements IVLMClientService {
 
     @Override
     @Retryable(value = {RestClientException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public VLMJobResponse createJob(VLMJobRequest request, boolean autoStart) {
+    public VLMJobResponse createJob(VLMJobRequest request, boolean autoStart) throws ServiceException {
         log.info("创建VLM作业，设备ID: {}, 通道ID: {}, 自动启动: {}", 
                 request.getDeviceId(), request.getChannelId(), autoStart);
         
@@ -82,7 +82,7 @@ public class VLMClientServiceImpl implements IVLMClientService {
 
     @Override
     @Retryable(value = {RestClientException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public VLMJobActionResponse startJob(String jobId, boolean forceRestart) {
+    public VLMJobActionResponse startJob(String jobId, boolean forceRestart) throws ServiceException {
         log.info("启动VLM作业，作业ID: {}, 强制重启: {}", jobId, forceRestart);
         
         try {
@@ -118,7 +118,7 @@ public class VLMClientServiceImpl implements IVLMClientService {
 
     @Override
     @Retryable(value = {RestClientException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public VLMJobActionResponse pauseJob(String jobId) {
+    public VLMJobActionResponse pauseJob(String jobId) throws ServiceException {
         log.info("暂停VLM作业，作业ID: {}", jobId);
         
         try {
@@ -151,7 +151,7 @@ public class VLMClientServiceImpl implements IVLMClientService {
 
     @Override
     @Retryable(value = {RestClientException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public VLMJobActionResponse resumeJob(String jobId) {
+    public VLMJobActionResponse resumeJob(String jobId) throws ServiceException {
         log.info("恢复VLM作业，作业ID: {}", jobId);
         
         try {
@@ -184,7 +184,7 @@ public class VLMClientServiceImpl implements IVLMClientService {
 
     @Override
     @Retryable(value = {RestClientException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public VLMJobActionResponse stopJob(String jobId) {
+    public VLMJobActionResponse stopJob(String jobId) throws ServiceException {
         log.info("停止VLM作业，作业ID: {}", jobId);
         
         try {
@@ -216,7 +216,7 @@ public class VLMClientServiceImpl implements IVLMClientService {
     }
 
     @Override
-    public VLMJobResponse getJobStatus(String jobId) {
+    public VLMJobResponse getJobStatus(String jobId) throws ServiceException {
         log.debug("查询VLM作业状态，作业ID: {}", jobId);
         
         try {
