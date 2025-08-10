@@ -43,3 +43,6 @@ md_docs/
 logs/*
 nohup.out
 pid.file
+
+# wvp cache
+snap/

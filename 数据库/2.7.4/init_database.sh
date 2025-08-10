@@ -10,7 +10,7 @@ DB_NAME="wvp"
 DB_USER="wvpuser"
 DB_PASSWORD="123456789"
 MYSQL_ROOT_PASSWORD="sysu888"
-BASE_DIR="/home/firelab/JHF/wvp_vlm/wvp-GB28181-pro/数据库/2.7.4"
+BASE_DIR="/home/firelab/JHF/wvp_vlm/wvp-GB28181-pro"
 SQL_DIR="${BASE_DIR}/数据库/2.7.4"
 
 echo "=== WVP 数据库初始化开始 ==="

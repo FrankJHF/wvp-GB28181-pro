@@ -148,7 +148,7 @@ export default {
       // 根据WVP的RTSP地址格式构建
       const serverHost = window.location.hostname
       const rtspPort = '554' // 默认RTSP端口
-      return `rtsp://${serverHost}:${rtspPort}/rtp/${deviceId}/${channelId}`
+      return `rtsp://${serverHost}:${rtspPort}/rtp/${deviceId}_${channelId}?originTypeStr=rtp_push`
     },
 
     handleChange(value) {

@@ -28,34 +28,22 @@ service.interceptors.request.use(
 
 // response interceptor
 service.interceptors.response.use(
-  /**
-   * If you want to get http information such as headers or status
-   * Please return  response => response
-  */
-
-  /**
-   * Determine the request status by custom code
-   * Here is just an example
-   * You can also judge the status by HTTP Status Code
-   */
   response => {
-    if (response.config.url.indexOf('/api/user/logout') >= 0) {
-      return
-    }
     const res = response.data
     if (res.code && res.code !== 0) {
       Message({
-        message: res.msg,
+        message: res.msg || 'Error',
         type: 'error',
         duration: 5 * 1000
       })
+      return Promise.reject(new Error(res.msg || 'Error'))
     } else {
       return res
     }
   },
   error => {
     console.log(error) // for debug
-    if (error.response.status === 401) {
+    if (error.response && error.response.status === 401) {
       // to re-login
       MessageBox.confirm('登录已经到期， 是否重新登录', '登录确认', {
         confirmButtonText: '重新登录',
@@ -73,7 +61,7 @@ service.interceptors.response.use(
         duration: 5 * 1000
       })
     }
-    // return Promise.reject(error)
+    return Promise.reject(error)
   }
 )
 
