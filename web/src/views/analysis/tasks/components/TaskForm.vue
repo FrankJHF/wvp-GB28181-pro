@@ -13,18 +13,18 @@
       label-width="120px"
       v-loading="loading"
     >
-      <el-form-item label="任务名称" prop="taskName">
+      <el-form-item label="任务名称" prop="task_name">
         <el-input
-          v-model="taskForm.taskName"
+          v-model="taskForm.task_name"
           placeholder="请输入任务名称"
           maxlength="50"
           show-word-limit
         />
       </el-form-item>
 
-      <el-form-item label="分析卡片" prop="analysisCardId">
+      <el-form-item label="分析卡片" prop="analysis_card_id">
         <el-select
-          v-model="taskForm.analysisCardId"
+          v-model="taskForm.analysis_card_id"
           placeholder="请选择分析卡片"
           style="width: 100%"
           @change="handleCardChange"
@@ -137,19 +137,19 @@ export default {
       loading: false,
       availableCards: [],
       taskForm: {
-        taskName: '',
-        analysisCardId: null,
+        task_name: '',
+        analysis_card_id: null,
         deviceChannelId: null,
         description: '',
         analysisConfig: '',
         autoStart: false
       },
       taskRules: {
-        taskName: [
+        task_name: [
           { required: true, message: '请输入任务名称', trigger: 'blur' },
           { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
         ],
-        analysisCardId: [
+        analysis_card_id: [
           { required: true, message: '请选择分析卡片', trigger: 'change' }
         ],
         deviceChannelId: [
@@ -195,14 +195,14 @@ export default {
           analysisConfig: this.task.analysisConfig || '',
           autoStart: false
         }
-        this.handleCardChange(this.taskForm.analysisCardId)
+        this.handleCardChange(this.taskForm.analysis_card_id)
         if (this.taskForm.deviceChannelId) {
           this.handleChannelChange(this.taskForm.deviceChannelId)
         }
       } else {
         this.resetForm()
         if (this.defaultCardId) {
-          this.taskForm.analysisCardId = this.defaultCardId
+          this.taskForm.analysis_card_id = this.defaultCardId
           this.$nextTick(() => {
             this.handleCardChange(this.defaultCardId)
           })
@@ -211,8 +211,8 @@ export default {
     },
     resetForm() {
       this.taskForm = {
-        taskName: '',
-        analysisCardId: null,
+        task_name: '',
+        analysis_card_id: null,
         deviceChannelId: null,
         description: '',
         analysisConfig: '',
@@ -266,11 +266,11 @@ export default {
 
           const submitData = {
             ...this.taskForm,
-            deviceId: channelInfo.deviceId,
-            channelId: channelInfo.channelId,
-            deviceName: channelInfo.deviceName,
-            channelName: channelInfo.channelName,
-            rtspUrl: channelInfo.rtspUrl
+            device_id: channelInfo.deviceId,
+            channel_id: channelInfo.channelId,
+            device_name: channelInfo.deviceName,
+            channel_name: channelInfo.channelName,
+            rtsp_url: channelInfo.rtspUrl
           }
           
           try {

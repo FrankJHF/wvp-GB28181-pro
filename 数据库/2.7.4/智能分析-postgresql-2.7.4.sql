@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS wvp_analysis_task (
     channel_id VARCHAR(50) NOT NULL,
     channel_name VARCHAR(100),
     rtsp_url VARCHAR(500),
-    status VARCHAR(20) DEFAULT 'created' CHECK (status IN ('created', 'starting', 'running', 'pausing', 'paused', 'resuming', 'stopping', 'stopped', 'failed', 'error')),
+    status VARCHAR(20) DEFAULT 'CREATED' CHECK (status IN ('CREATED', 'STARTING', 'RUNNING', 'PAUSING', 'PAUSED', 'RESUMING', 'STOPPING', 'STOPPED', 'FAILED', 'ERROR')),
     vlm_job_id VARCHAR(50),
     config JSONB,
     error_message TEXT,
