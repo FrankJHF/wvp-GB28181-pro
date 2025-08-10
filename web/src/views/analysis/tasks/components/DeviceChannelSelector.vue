@@ -20,7 +20,7 @@
         <span class="label">通道:</span> {{ selectedChannelInfo.channelName }}
       </div>
       <div class="info-row" v-if="selectedChannelInfo.status !== undefined">
-        <span class="label">状态:</span> 
+        <span class="label">状态:</span>
         <el-tag :type="selectedChannelInfo.status === 'ON' ? 'success' : 'danger'" size="mini">
           {{ selectedChannelInfo.status === 'ON' ? '在线' : '离线' }}
         </el-tag>
@@ -80,7 +80,7 @@ export default {
           count: 1000,
           status: 'ON'
         })
-        
+
         console.log('设备查询响应:', response)
         const devices = response.data?.list || []
         this.cascaderOptions = devices.map(device => {
@@ -99,14 +99,28 @@ export default {
     },
 
     async loadChannels(node, resolve) {
-      // 检查是否为根节点或无效节点，避免不必要的API调用
-      if (!node || node.root || node.level === 0 || !node.value) {
+      // 根节点(level 0)或叶子节点不进行懒加载
+      if (node.level === 0 || node.leaf) {
         resolve([])
         return
       }
+
+      // 确保传递给API的是纯设备ID，不包含通道ID
+      let deviceId = node.value
+      if (typeof deviceId === 'string' && deviceId.includes('-')) {
+        // 如果ID包含连字符，取第一部分作为设备ID
+        deviceId = deviceId.split('-')[0]
+      }
       
-      const deviceId = node.value
-      
+      console.log('loadChannels - 设备ID:', deviceId, '原始node.value:', node.value)
+
+      // 验证设备ID格式 - GB28181设备ID通常为20位数字
+      if (!deviceId || typeof deviceId !== 'string' || !/^\d{20}$/.test(deviceId)) {
+        console.error('无效的设备ID格式:', deviceId)
+        resolve([])
+        return
+      }
+
       try {
         const response = await queryChannels(deviceId, {
           page: 1,
@@ -128,7 +142,7 @@ export default {
             rtspUrl: this.buildRtspUrl(deviceId, channel.deviceId)
           }
           this.channelsMap.set(`${deviceId}-${channel.deviceId}`, channelInfo)
-          
+
           return {
             id: `${deviceId}-${channel.deviceId}`,
             name: `${channel.name || channel.deviceId} ${channel.status === 'ON' ? '(在线)' : '(离线)'}`,
