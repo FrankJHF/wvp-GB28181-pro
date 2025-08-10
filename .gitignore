@@ -34,6 +34,7 @@ certificates
 
 # ui
 .ui/
+.screenshot/
 
 # doc
 md_docs/

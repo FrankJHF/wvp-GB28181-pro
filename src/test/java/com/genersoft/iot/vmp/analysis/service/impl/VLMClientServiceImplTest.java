@@ -310,7 +310,7 @@ class VLMClientServiceImplTest {
                 any(Class.class)
         )).thenThrow(new RestClientException("Service unavailable"));
 
-        // Act & Assert - 各种操作都应该抛出ServiceException
+        // Act & Assert - VLM操作都应该抛出ServiceException
         assertThrows(ServiceException.class, () -> {
             vlmClientService.createJob(jobRequest, true);
         });
@@ -335,9 +335,12 @@ class VLMClientServiceImplTest {
             vlmClientService.getJobStatus("test-job-001");
         });
         
-        assertThrows(ServiceException.class, () -> {
-            vlmClientService.checkHealth();
-        });
+        // 健康检查方法应该返回unhealthy状态而不是抛出异常
+        IVLMClientService.VLMHealthResponse healthResult = vlmClientService.checkHealth();
+        assertNotNull(healthResult);
+        assertEquals("unhealthy", healthResult.getStatus());
+        assertFalse(healthResult.isHealthy());
+        assertTrue(healthResult.getMessage().contains("服务连接失败"));
     }
 
     @Test
@@ -353,18 +356,18 @@ class VLMClientServiceImplTest {
                 new IVLMClientService.VLMHealthResponse("healthy", "OK");
         assertEquals("healthy", response2.getStatus());
         assertEquals("OK", response2.getMessage());
-        assertTrue(response2.getTimestamp() > 0);
+        assertNotNull(response2.getTimestamp());
 
         // 测试setter和getter
         response1.setStatus("unhealthy");
         response1.setMessage("Error");
         response1.setVersion("1.0.0");
-        response1.setTimestamp(123456L);
+        response1.setTimestamp("2025-08-10T13:30:00.000Z");
 
         assertEquals("unhealthy", response1.getStatus());
         assertEquals("Error", response1.getMessage());
         assertEquals("1.0.0", response1.getVersion());
-        assertEquals(123456L, response1.getTimestamp());
+        assertEquals("2025-08-10T13:30:00.000Z", response1.getTimestamp());
         assertFalse(response1.isHealthy());
 
         // 测试isHealthy方法

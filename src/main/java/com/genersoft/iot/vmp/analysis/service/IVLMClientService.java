@@ -77,14 +77,14 @@ public interface IVLMClientService {
         private String status;
         private String message;
         private String version;
-        private long timestamp;
+        private String timestamp;
 
         public VLMHealthResponse() {}
 
         public VLMHealthResponse(String status, String message) {
             this.status = status;
             this.message = message;
-            this.timestamp = System.currentTimeMillis();
+            this.timestamp = java.time.Instant.now().toString();
         }
 
         public String getStatus() { return status; }
@@ -96,8 +96,8 @@ public interface IVLMClientService {
         public String getVersion() { return version; }
         public void setVersion(String version) { this.version = version; }
         
-        public long getTimestamp() { return timestamp; }
-        public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+        public String getTimestamp() { return timestamp; }
+        public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
 
         public boolean isHealthy() {
             return "healthy".equals(status);

@@ -95,7 +95,7 @@ class AnalysisTaskServiceImplTest {
 
     @Test
     @DisplayName("测试根据ID查询任务")
-    void testGetTaskById() {
+    void testGetTaskById() throws ServiceException {
         // Arrange
         when(analysisTaskMapper.selectById("test-task-001")).thenReturn(testTask);
 
@@ -112,7 +112,7 @@ class AnalysisTaskServiceImplTest {
 
     @Test
     @DisplayName("测试查询不存在的任务")
-    void testGetTaskByIdNotFound() {
+    void testGetTaskByIdNotFound() throws ServiceException {
         // Arrange
         when(analysisTaskMapper.selectById("non-existing")).thenReturn(null);
 
@@ -126,14 +126,32 @@ class AnalysisTaskServiceImplTest {
 
     @Test
     @DisplayName("测试更新任务成功")
-    void testUpdateTaskSuccess() {
+    void testUpdateTaskSuccess() throws ServiceException {
         // Arrange
         when(analysisTaskMapper.selectById("test-task-001")).thenReturn(testTask);
         when(analysisTaskMapper.update(any(AnalysisTask.class))).thenReturn(1);
+        
+        // 创建更新后的任务对象用于最后的查询
+        AnalysisTask updatedTask = new AnalysisTask();
+        updatedTask.setId("test-task-001");
+        updatedTask.setTaskName("更新后的任务名称");
+        updatedTask.setAnalysisCardId("card-001");
+        updatedTask.setDeviceId("34020000001320000001");
+        updatedTask.setChannelId("34020000001310000001");
+        updatedTask.setErrorMessage("测试错误");
+        updatedTask.setUpdatedAt(LocalDateTime.now());
+        
+        // 第二次调用返回更新后的任务
+        when(analysisTaskMapper.selectById("test-task-001"))
+                .thenReturn(testTask)        // 第一次调用用于检查任务存在
+                .thenReturn(updatedTask);    // 第二次调用返回更新后的任务
 
         AnalysisTask updateRequest = new AnalysisTask();
         updateRequest.setId("test-task-001");
         updateRequest.setTaskName("更新后的任务名称");
+        updateRequest.setAnalysisCardId("card-001");  // 添加必填的分析卡片ID
+        updateRequest.setDeviceId("34020000001320000001");  // 添加必填的设备ID
+        updateRequest.setChannelId("34020000001310000001");  // 添加必填的通道ID
         updateRequest.setErrorMessage("测试错误");
 
         // Act
@@ -146,6 +164,7 @@ class AnalysisTaskServiceImplTest {
         assertNotNull(result.getUpdatedAt());
 
         verify(analysisTaskMapper, times(1)).update(any(AnalysisTask.class));
+        verify(analysisTaskMapper, times(2)).selectById("test-task-001");
     }
 
     @Test
@@ -157,19 +176,22 @@ class AnalysisTaskServiceImplTest {
         AnalysisTask updateRequest = new AnalysisTask();
         updateRequest.setId("non-existing");
         updateRequest.setTaskName("更新后的任务名称");
+        updateRequest.setAnalysisCardId("card-001");  // 添加必填的分析卡片ID
+        updateRequest.setDeviceId("34020000001320000001");  // 添加必填的设备ID
+        updateRequest.setChannelId("34020000001310000001");  // 添加必填的通道ID
 
         // Act & Assert
         ServiceException exception = assertThrows(ServiceException.class, () -> {
             analysisTaskService.updateTask(updateRequest);
         });
         
-        assertEquals("任务不存在", exception.getMessage());
+        assertEquals("分析任务不存在，ID: non-existing", exception.getMessage());
         verify(analysisTaskMapper, never()).update(any());
     }
 
     @Test
     @DisplayName("测试删除任务成功")
-    void testDeleteTaskSuccess() {
+    void testDeleteTaskSuccess() throws ServiceException {
         // Arrange
         testTask.setStatus(TaskStatus.STOPPED);
         when(analysisTaskMapper.selectById("test-task-001")).thenReturn(testTask);
@@ -201,7 +223,7 @@ class AnalysisTaskServiceImplTest {
 
     @Test
     @DisplayName("测试删除不存在的任务")
-    void testDeleteTaskNotFound() {
+    void testDeleteTaskNotFound() throws ServiceException {
         // Arrange
         when(analysisTaskMapper.selectById("non-existing")).thenReturn(null);
 
@@ -210,7 +232,7 @@ class AnalysisTaskServiceImplTest {
             analysisTaskService.deleteTask("non-existing");
         });
         
-        assertEquals("任务不存在", exception.getMessage());
+        assertEquals("分析任务不存在，ID: non-existing", exception.getMessage());
         verify(analysisTaskMapper, never()).delete(anyString());
     }
 

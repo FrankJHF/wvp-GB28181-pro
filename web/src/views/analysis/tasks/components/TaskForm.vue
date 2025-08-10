@@ -235,6 +235,7 @@ export default {
       }
     },
     handleChannelChange(channelInfo) {
+      // 通道变更时的处理逻辑，显示RTSP地址
       if (channelInfo && channelInfo.rtspUrl) {
         this.rtspUrl = channelInfo.rtspUrl
       } else {

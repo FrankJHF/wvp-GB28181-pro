@@ -19,10 +19,10 @@
       <div class="info-row">
         <span class="label">通道:</span> {{ selectedChannelInfo.channelName }}
       </div>
-      <div class="info-row" v-if="selectedChannelInfo.online !== undefined">
+      <div class="info-row" v-if="selectedChannelInfo.status !== undefined">
         <span class="label">状态:</span> 
-        <el-tag :type="selectedChannelInfo.online ? 'success' : 'danger'" size="mini">
-          {{ selectedChannelInfo.online ? '在线' : '离线' }}
+        <el-tag :type="selectedChannelInfo.status === 'ON' ? 'success' : 'danger'" size="mini">
+          {{ selectedChannelInfo.status === 'ON' ? '在线' : '离线' }}
         </el-tag>
       </div>
     </div>
@@ -81,6 +81,7 @@ export default {
           status: 'ON'
         })
         
+        console.log('设备查询响应:', response)
         const devices = response.data?.list || []
         this.cascaderOptions = devices.map(device => {
           this.devicesMap.set(device.deviceId, device)
@@ -98,6 +99,12 @@ export default {
     },
 
     async loadChannels(node, resolve) {
+      // 检查是否为根节点或无效节点，避免不必要的API调用
+      if (!node || node.root || node.level === 0 || !node.value) {
+        resolve([])
+        return
+      }
+      
       const deviceId = node.value
       
       try {
@@ -110,17 +117,21 @@ export default {
 
         const channels = response.data?.list || []
         const channelNodes = channels.map(channel => {
+          // 使用node.label获取设备名，这是el-cascader的标准属性
+          const deviceName = node.label || this.devicesMap.get(deviceId)?.name || deviceId
           const channelInfo = {
             ...channel,
-            deviceId: deviceId,
-            deviceName: node.data.name,
-            rtspUrl: this.buildRtspUrl(deviceId, channel.channelId)
+            deviceId: deviceId, // 父设备ID
+            channelId: channel.deviceId, // DeviceChannel中的deviceId字段实际上是通道ID
+            channelName: channel.name || channel.deviceId,
+            deviceName: deviceName,
+            rtspUrl: this.buildRtspUrl(deviceId, channel.deviceId)
           }
-          this.channelsMap.set(`${deviceId}-${channel.channelId}`, channelInfo)
+          this.channelsMap.set(`${deviceId}-${channel.deviceId}`, channelInfo)
           
           return {
-            id: `${deviceId}-${channel.channelId}`,
-            name: `${channel.name || channel.channelId} ${channel.online ? '(在线)' : '(离线)'}`,
+            id: `${deviceId}-${channel.deviceId}`,
+            name: `${channel.name || channel.deviceId} ${channel.status === 'ON' ? '(在线)' : '(离线)'}`,
             channelInfo: channelInfo,
             leaf: true
           }
@@ -136,7 +147,7 @@ export default {
     buildRtspUrl(deviceId, channelId) {
       // 根据WVP的RTSP地址格式构建
       const serverHost = window.location.hostname
-      const rtspPort = '554' // 默认RTSP端口，实际项目中应该从配置获取
+      const rtspPort = '554' // 默认RTSP端口
       return `rtsp://${serverHost}:${rtspPort}/rtp/${deviceId}/${channelId}`
     },
 
@@ -146,7 +157,7 @@ export default {
       this.$emit('change', this.selectedChannelInfo)
     },
 
-    handleExpandChange(activeNames) {
+    handleExpandChange() {
       // 级联选择器展开时的处理逻辑
     },
 
@@ -167,7 +178,7 @@ export default {
     },
 
     validate() {
-      return this.selectedChannelInfo && this.selectedChannelInfo.online
+      return this.selectedChannelInfo && this.selectedChannelInfo.status === 'ON'
     }
   }
 }
