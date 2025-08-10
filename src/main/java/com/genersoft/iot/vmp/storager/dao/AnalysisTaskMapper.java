@@ -198,6 +198,118 @@ public interface AnalysisTaskMapper {
             "</foreach>" +
             " </script>"})
     int batchUpdateStatus(@Param("taskIds") List<String> taskIds, 
-                         @Param("status") String status,
+                         @Param("status") TaskStatus status,
                          @Param("errorMessage") String errorMessage);
+
+    /**
+     * 根据状态查询任务
+     */
+    @Select("SELECT id, task_name as taskName, analysis_card_id as analysisCardId, device_id as deviceId, device_name as deviceName, " +
+            "channel_id as channelId, channel_name as channelName, rtsp_url as rtspUrl, status, vlm_job_id as vlmJobId, " +
+            "config, error_message as errorMessage, last_active_time as lastActiveTime, last_status_sync as lastStatusSync, " +
+            "created_by as createdBy, created_at as createdAt, updated_at as updatedAt " +
+            "FROM wvp_analysis_task WHERE status = #{status} ORDER BY created_at DESC")
+    @Results({
+        @Result(property = "config", column = "config", typeHandler = com.genersoft.iot.vmp.utils.JsonTypeHandler.class),
+        @Result(property = "status", column = "status", javaType = TaskStatus.class)
+    })
+    List<AnalysisTask> selectByStatus(@Param("status") TaskStatus status);
+
+    /**
+     * 根据设备ID查询任务
+     */
+    @Select("SELECT id, task_name as taskName, analysis_card_id as analysisCardId, device_id as deviceId, device_name as deviceName, " +
+            "channel_id as channelId, channel_name as channelName, rtsp_url as rtspUrl, status, vlm_job_id as vlmJobId, " +
+            "config, error_message as errorMessage, last_active_time as lastActiveTime, last_status_sync as lastStatusSync, " +
+            "created_by as createdBy, created_at as createdAt, updated_at as updatedAt " +
+            "FROM wvp_analysis_task WHERE device_id = #{deviceId} ORDER BY created_at DESC")
+    @Results({
+        @Result(property = "config", column = "config", typeHandler = com.genersoft.iot.vmp.utils.JsonTypeHandler.class),
+        @Result(property = "status", column = "status", javaType = TaskStatus.class)
+    })
+    List<AnalysisTask> selectByDeviceId(@Param("deviceId") String deviceId);
+
+    /**
+     * 根据通道ID查询任务
+     */
+    @Select("SELECT id, task_name as taskName, analysis_card_id as analysisCardId, device_id as deviceId, device_name as deviceName, " +
+            "channel_id as channelId, channel_name as channelName, rtsp_url as rtspUrl, status, vlm_job_id as vlmJobId, " +
+            "config, error_message as errorMessage, last_active_time as lastActiveTime, last_status_sync as lastStatusSync, " +
+            "created_by as createdBy, created_at as createdAt, updated_at as updatedAt " +
+            "FROM wvp_analysis_task WHERE channel_id = #{channelId} ORDER BY created_at DESC")
+    @Results({
+        @Result(property = "config", column = "config", typeHandler = com.genersoft.iot.vmp.utils.JsonTypeHandler.class),
+        @Result(property = "status", column = "status", javaType = TaskStatus.class)
+    })
+    List<AnalysisTask> selectByChannelId(@Param("channelId") String channelId);
+
+    /**
+     * 查询活跃任务
+     */
+    @Select("SELECT id, task_name as taskName, analysis_card_id as analysisCardId, device_id as deviceId, device_name as deviceName, " +
+            "channel_id as channelId, channel_name as channelName, rtsp_url as rtspUrl, status, vlm_job_id as vlmJobId, " +
+            "config, error_message as errorMessage, last_active_time as lastActiveTime, last_status_sync as lastStatusSync, " +
+            "created_by as createdBy, created_at as createdAt, updated_at as updatedAt " +
+            "FROM wvp_analysis_task WHERE status IN ('running', 'starting', 'pausing', 'paused', 'resuming') ORDER BY created_at DESC")
+    @Results({
+        @Result(property = "config", column = "config", typeHandler = com.genersoft.iot.vmp.utils.JsonTypeHandler.class),
+        @Result(property = "status", column = "status", javaType = TaskStatus.class)
+    })
+    List<AnalysisTask> selectActiveTasks();
+
+    /**
+     * 查询需要状态同步的任务（重载方法）
+     */
+    @Select("SELECT id, task_name as taskName, analysis_card_id as analysisCardId, device_id as deviceId, device_name as deviceName, " +
+            "channel_id as channelId, channel_name as channelName, rtsp_url as rtspUrl, status, vlm_job_id as vlmJobId, " +
+            "config, error_message as errorMessage, last_active_time as lastActiveTime, last_status_sync as lastStatusSync, " +
+            "created_by as createdBy, created_at as createdAt, updated_at as updatedAt " +
+            "FROM wvp_analysis_task " +
+            "WHERE status IN ('starting', 'running', 'pausing', 'paused', 'resuming', 'stopping') " +
+            "AND (last_status_sync IS NULL OR last_status_sync < DATE_SUB(NOW(), INTERVAL #{minutes} MINUTE))")
+    @Results({
+        @Result(property = "config", column = "config", typeHandler = com.genersoft.iot.vmp.utils.JsonTypeHandler.class),
+        @Result(property = "status", column = "status", javaType = TaskStatus.class)
+    })
+    List<AnalysisTask> selectTasksNeedingStatusSync(@Param("minutes") int minutes);
+
+    /**
+     * 统计任务数量（重载方法）
+     */
+    @Select({" <script>" +
+            "SELECT COUNT(*) FROM wvp_analysis_task " +
+            "<where>" +
+            "<if test=\"status != null\"> AND status = #{status}</if>" +
+            "<if test=\"createdBy != null and createdBy != ''\"> AND created_by = #{createdBy}</if>" +
+            "</where>" +
+            " </script>"})
+    long countTasks(@Param("status") TaskStatus status, @Param("createdBy") String createdBy);
+
+    /**
+     * 根据分析卡片ID查询任务
+     */
+    @Select("SELECT id, task_name as taskName, analysis_card_id as analysisCardId, device_id as deviceId, device_name as deviceName, " +
+            "channel_id as channelId, channel_name as channelName, rtsp_url as rtspUrl, status, vlm_job_id as vlmJobId, " +
+            "config, error_message as errorMessage, last_active_time as lastActiveTime, last_status_sync as lastStatusSync, " +
+            "created_by as createdBy, created_at as createdAt, updated_at as updatedAt " +
+            "FROM wvp_analysis_task WHERE analysis_card_id = #{analysisCardId} ORDER BY created_at DESC")
+    @Results({
+        @Result(property = "config", column = "config", typeHandler = com.genersoft.iot.vmp.utils.JsonTypeHandler.class),
+        @Result(property = "status", column = "status", javaType = TaskStatus.class)
+    })
+    List<AnalysisTask> selectByAnalysisCardId(@Param("analysisCardId") String analysisCardId);
+
+    /**
+     * 根据状态和创建者查询任务
+     */
+    @Select("SELECT id, task_name as taskName, analysis_card_id as analysisCardId, device_id as deviceId, device_name as deviceName, " +
+            "channel_id as channelId, channel_name as channelName, rtsp_url as rtspUrl, status, vlm_job_id as vlmJobId, " +
+            "config, error_message as errorMessage, last_active_time as lastActiveTime, last_status_sync as lastStatusSync, " +
+            "created_by as createdBy, created_at as createdAt, updated_at as updatedAt " +
+            "FROM wvp_analysis_task WHERE status = #{status} AND created_by = #{createdBy} ORDER BY created_at DESC")
+    @Results({
+        @Result(property = "config", column = "config", typeHandler = com.genersoft.iot.vmp.utils.JsonTypeHandler.class),
+        @Result(property = "status", column = "status", javaType = TaskStatus.class)
+    })
+    List<AnalysisTask> selectByStatusAndCreatedBy(@Param("status") TaskStatus status, @Param("createdBy") String createdBy);
 }

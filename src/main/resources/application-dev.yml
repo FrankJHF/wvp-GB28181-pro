@@ -21,16 +21,16 @@ spring:
     # [可选] 数据库 DB
     database: 7
     # [可选] 访问密码,若你的redis服务器没有设置密码，就不需要用密码去连接
-    password: luna
+    password:
     # [可选] 超时时间
     timeout: 10000
     # mysql数据源
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/wvp273数据库统合?useUnicode=true&characterEncoding=UTF8&rewriteBatchedStatements=true&serverTimezone=PRC&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true
-    username: root
-    password: 12345678
+    url: jdbc:mysql://127.0.0.1:3306/wvp?useUnicode=true&characterEncoding=UTF8&rewriteBatchedStatements=true&serverTimezone=PRC&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true
+    username: wvpuser
+    password: 123456789
 #[可选] WVP监听的HTTP端口, 网页和接口调用都是这个端口
 server:
   port: 18080
@@ -63,19 +63,19 @@ sip:
 
 #zlm 默认服务器配置
 media:
-  id: zlmediakit-local
+  id: XzaFIOP5wopzTvJY
   # [必须修改] zlm服务器的内网IP
-  ip: 192.168.1.10
+  ip: 192.168.124.27
   # [必须修改] zlm服务器的http.port
-  http-port: 9092
+  http-port: 80
   # [必选选] zlm服务器的hook.admin_params=secret
-  secret: TWSYFgYJOQWB4ftgeYut8DW4wbs7pQnj
+  secret: 4PchnO5Ug5K9GArbCyG0YdXT01kGfpYu
   # 启用多端口模式, 多端口模式使用端口区分每路流，兼容性更好。 单端口使用流的ssrc区分， 点播超时建议使用多端口测试
   rtp:
     # [可选] 是否启用多端口模式, 开启后会在portRange范围内选择端口用于媒体流传输
     enable: true
     # [可选] 在此范围内选择端口用于媒体流传输, 必须提前在zlm上配置该属性，不然自动配置此属性可能不成功
-    port-range: 40000,45000 # 端口范围
+    port-range: 30000,35000 # 端口范围
     # [可选] 国标级联在此范围内选择端口发送媒体流,
     send-port-range: 50000,55000 # 端口范围
 # [根据业务需求配置]
@@ -98,7 +98,7 @@ vlm:
   # [必须修改] VLM服务器地址
   server:
     # VLM服务的基础URL
-    base-url: http://localhost:8000
+    base-url: http://localhost:8001
     # 连接超时时间(毫秒)
     connect-timeout: 10000
     # 读取超时时间(毫秒)
@@ -119,23 +119,31 @@ vlm:
     callback-url: http://localhost:18080/api/vlm/callback
     # 创建任务时是否自动启动
     auto-start: true
-  # 默认分析配置
-  analysis:
-    # 推理间隔(秒)
-    inference-interval: 5
-    # 帧缓冲大小
-    frame-buffer-size: 180
-    # 采样帧率
-    sampling-fps: 5
-    # 最大新token数量
-    max-new-tokens: 180
-    # 默认分析模型名称
-    default-model-name: videollama3-fire-detection
-    # 默认分析提示词
-    default-prompt: 请分析视频中是否发生火灾或其他突发情况
 
-# 智能分析配置
+# 智能分析统一配置
 analysis:
+  # VLM 相关分析配置
+  vlm:
+    # 推理间隔(秒)
+    inference-interval: 30
+    # 帧缓冲大小
+    frame-buffer-size: 30
+    # 采样帧率
+    sampling-fps: 1
+    # 最大新token数量
+    max-new-tokens: 200
+    # 默认分析模型名称
+    default-model-name: model_ck1
+    # 默认分析提示词 (使用 | 进行多行文本定义)
+    default-prompt: |
+      <video>
+      请你分析视频片段，判断其中是否发生了与火灾或其他突发情况相关的应急事件。请指出各事件其在视频片段中的时间范围，并简要描述事件内容。若存在多个不同的事件，请按时间顺序输出多个json单元；当视频中发生新的、有意义的、与火灾相关的事件，或当前事件状态发生显著变化时，请开始一个新的事件段。事件段可以重叠。
+      每个事件输出要求如下（严格遵循 JSON 格式）：
+      {'event_time': '起始秒-结束秒',  // 时间范围，单位为秒，保留一位小数
+      'event_des': '事件简要描述' ,
+      'emergency_exist': '是' 或 '否' // 是否发生应急事件,必须根据事件描述内容来回答是或否}
+      注意事项：时间是相对于该视频片段的局部时间（即片段起点为 0s）；所有事件的范围交集要求覆盖全时段。请仅输出符合上述格式的 JSON，无需额外解释说明。有连续时间的相同事件请合并输出，切忌零碎。
+
   # 快照图片存储配置
   snapshot:
     # [可选] 存储根路径
@@ -148,4 +156,3 @@ analysis:
     cleanup-enabled: true
     # [可选] 文件清理任务执行时间（cron表达式，每天凌晨2点执行）
     cleanup-cron: "0 0 2 * * ?"
-

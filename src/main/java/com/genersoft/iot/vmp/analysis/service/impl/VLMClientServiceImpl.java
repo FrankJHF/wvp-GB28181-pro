@@ -1,6 +1,7 @@
 package com.genersoft.iot.vmp.analysis.service.impl;
 
 import com.genersoft.iot.vmp.analysis.service.IVLMClientService;
+import com.genersoft.iot.vmp.analysis.service.IVLMClientService.VLMHealthResponse;
 import com.genersoft.iot.vmp.analysis.bean.dto.VLMJobRequest;
 import com.genersoft.iot.vmp.analysis.bean.dto.VLMJobResponse;
 import com.genersoft.iot.vmp.analysis.bean.dto.VLMJobActionResponse;
@@ -17,7 +18,6 @@ import org.springframework.retry.annotation.Retryable;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Resource;
-import java.util.concurrent.TimeUnit;
 
 /**
  * VLM微服务客户端实现类

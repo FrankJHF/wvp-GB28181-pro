@@ -89,7 +89,7 @@ public class AnalysisAlarmController {
             @Parameter(name = "alarmId", description = "告警ID", required = true) 
             @PathVariable String alarmId) {
         
-        if (StringUtils.isEmpty(alarmId)) {
+        if ((alarmId == null || alarmId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "告警ID不能为空");
         }
         
@@ -118,7 +118,7 @@ public class AnalysisAlarmController {
             @Parameter(name = "taskId", description = "任务ID", required = true) 
             @PathVariable String taskId) {
         
-        if (StringUtils.isEmpty(taskId)) {
+        if ((taskId == null || taskId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "任务ID不能为空");
         }
         
@@ -179,11 +179,11 @@ public class AnalysisAlarmController {
             @Parameter(name = "status", description = "告警状态", required = true) 
             @RequestParam String status) {
         
-        if (StringUtils.isEmpty(alarmId)) {
+        if ((alarmId == null || alarmId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "告警ID不能为空");
         }
         
-        if (StringUtils.isEmpty(status)) {
+        if ((status == null || status.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "告警状态不能为空");
         }
         
@@ -227,7 +227,7 @@ public class AnalysisAlarmController {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "告警ID列表不能为空");
         }
         
-        if (StringUtils.isEmpty(status)) {
+        if ((status == null || status.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "告警状态不能为空");
         }
         
@@ -261,7 +261,7 @@ public class AnalysisAlarmController {
             @Parameter(name = "alarmId", description = "告警ID", required = true) 
             @PathVariable String alarmId) {
         
-        if (StringUtils.isEmpty(alarmId)) {
+        if ((alarmId == null || alarmId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "告警ID不能为空");
         }
         
@@ -293,7 +293,7 @@ public class AnalysisAlarmController {
             @Parameter(name = "alarmId", description = "告警ID", required = true) 
             @PathVariable String alarmId) {
         
-        if (StringUtils.isEmpty(alarmId)) {
+        if ((alarmId == null || alarmId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "告警ID不能为空");
         }
         
@@ -408,7 +408,7 @@ public class AnalysisAlarmController {
             @Parameter(name = "alarmId", description = "告警ID", required = true) 
             @PathVariable String alarmId) {
         
-        if (StringUtils.isEmpty(alarmId)) {
+        if ((alarmId == null || alarmId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "告警ID不能为空");
         }
         

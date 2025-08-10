@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -147,8 +148,6 @@ class AnalysisSystemIntegrationTest {
         assertTrue(createdCard.getEnabled());
 
         // Step 2: 创建分析任务（模拟设备验证和VLM服务调用）
-        when(vlmClientService.createJob(any(), eq(false))).thenReturn(createMockVLMJobResponse());
-        
         analysisTaskMapper.insert(testTask);
         
         AnalysisTask createdTask = analysisTaskMapper.selectById(testTask.getId());

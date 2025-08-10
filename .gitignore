@@ -38,4 +38,7 @@ certificates
 # doc
 md_docs/
 
-
+# bootstrap
+logs/*
+nohup.out
+pid.file

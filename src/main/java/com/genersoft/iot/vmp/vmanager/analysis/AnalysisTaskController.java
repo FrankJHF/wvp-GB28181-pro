@@ -91,7 +91,7 @@ public class AnalysisTaskController {
             @Parameter(name = "taskId", description = "任务ID", required = true) 
             @PathVariable String taskId) {
         
-        if (StringUtils.isEmpty(taskId)) {
+        if ((taskId == null || taskId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "任务ID不能为空");
         }
         
@@ -153,7 +153,7 @@ public class AnalysisTaskController {
             @PathVariable String taskId,
             @RequestBody AnalysisTask task) {
         
-        if (StringUtils.isEmpty(taskId)) {
+        if ((taskId == null || taskId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "任务ID不能为空");
         }
         
@@ -198,7 +198,7 @@ public class AnalysisTaskController {
             @Parameter(name = "taskId", description = "任务ID", required = true) 
             @PathVariable String taskId) {
         
-        if (StringUtils.isEmpty(taskId)) {
+        if ((taskId == null || taskId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "任务ID不能为空");
         }
         
@@ -245,7 +245,7 @@ public class AnalysisTaskController {
             @Parameter(name = "forceRestart", description = "是否强制重启，默认false") 
             @RequestParam(defaultValue = "false") boolean forceRestart) {
         
-        if (StringUtils.isEmpty(taskId)) {
+        if ((taskId == null || taskId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "任务ID不能为空");
         }
         
@@ -285,7 +285,7 @@ public class AnalysisTaskController {
             @Parameter(name = "taskId", description = "任务ID", required = true) 
             @PathVariable String taskId) {
         
-        if (StringUtils.isEmpty(taskId)) {
+        if ((taskId == null || taskId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "任务ID不能为空");
         }
         
@@ -325,7 +325,7 @@ public class AnalysisTaskController {
             @Parameter(name = "taskId", description = "任务ID", required = true) 
             @PathVariable String taskId) {
         
-        if (StringUtils.isEmpty(taskId)) {
+        if ((taskId == null || taskId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "任务ID不能为空");
         }
         
@@ -365,7 +365,7 @@ public class AnalysisTaskController {
             @Parameter(name = "taskId", description = "任务ID", required = true) 
             @PathVariable String taskId) {
         
-        if (StringUtils.isEmpty(taskId)) {
+        if ((taskId == null || taskId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "任务ID不能为空");
         }
         

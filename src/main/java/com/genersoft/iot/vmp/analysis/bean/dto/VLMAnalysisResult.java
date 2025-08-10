@@ -32,6 +32,10 @@ public class VLMAnalysisResult {
     @JsonProperty("analysis_timestamp_utc")
     private String analysisTimestampUtc;
 
+    @Schema(description = "分析时间戳（兼容字段）")
+    @JsonProperty("analysis_timestamp")
+    private String analysisTimestamp;
+
     @Schema(description = "视频窗口信息")
     @JsonProperty("video_window")
     private VideoWindow videoWindow;

@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -97,7 +96,7 @@ public class TaskStateServiceImpl implements ITaskStateService {
     public TaskStatus syncTaskStatus(String taskId) throws ServiceException {
         log.debug("同步任务状态，任务ID: {}", taskId);
         
-        if (StringUtils.isEmpty(taskId)) {
+        if (taskId == null || taskId.trim().isEmpty()) {
             throw new ServiceException("任务ID不能为空");
         }
         
@@ -111,7 +110,7 @@ public class TaskStateServiceImpl implements ITaskStateService {
                 return null;
             }
             
-            if (StringUtils.isEmpty(task.getVlmJobId())) {
+            if (task.getVlmJobId() == null || task.getVlmJobId().trim().isEmpty()) {
                 log.debug("任务未关联VLM作业，跳过状态同步，任务ID: {}", taskId);
                 return task.getStatus();
             }
@@ -201,7 +200,7 @@ public class TaskStateServiceImpl implements ITaskStateService {
 
     @Override
     public TaskStatus getTaskStatus(String taskId) throws ServiceException {
-        if (StringUtils.isEmpty(taskId)) {
+        if (taskId == null || taskId.trim().isEmpty()) {
             throw new ServiceException("任务ID不能为空");
         }
         
@@ -211,7 +210,7 @@ public class TaskStateServiceImpl implements ITaskStateService {
 
     @Override
     public boolean canPerformAction(String taskId, TaskAction action) {
-        if (StringUtils.isEmpty(taskId) || action == null) {
+        if (taskId == null || taskId.trim().isEmpty() || action == null) {
             return false;
         }
         
@@ -230,7 +229,7 @@ public class TaskStateServiceImpl implements ITaskStateService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean forceUpdateTaskStatus(String taskId, TaskStatus status, String errorMessage) {
-        if (StringUtils.isEmpty(taskId) || status == null) {
+        if (taskId == null || taskId.trim().isEmpty() || status == null) {
             return false;
         }
         
@@ -261,7 +260,7 @@ public class TaskStateServiceImpl implements ITaskStateService {
         
         log.info("批量更新任务状态，数量: {}, 目标状态: {}", taskIds.size(), status);
         
-        int result = analysisTaskMapper.batchUpdateStatus(taskIds, status.getValue(), errorMessage);
+        int result = analysisTaskMapper.batchUpdateStatus(taskIds, status, errorMessage);
         
         log.info("批量更新任务状态完成，成功数量: {}", result);
         return result;
@@ -276,7 +275,7 @@ public class TaskStateServiceImpl implements ITaskStateService {
     private void performTaskAction(String taskId, TaskAction action, boolean forceRestart) throws ServiceException {
         log.info("执行任务操作，任务ID: {}, 操作: {}", taskId, action.getDescription());
         
-        if (StringUtils.isEmpty(taskId)) {
+        if (taskId == null || taskId.trim().isEmpty()) {
             throw new ServiceException("任务ID不能为空");
         }
         
@@ -297,7 +296,7 @@ public class TaskStateServiceImpl implements ITaskStateService {
             }
             
             // 检查VLM作业ID
-            if (StringUtils.isEmpty(task.getVlmJobId())) {
+            if (task.getVlmJobId() == null || task.getVlmJobId().trim().isEmpty()) {
                 throw new ServiceException("任务未关联VLM作业，无法执行操作");
             }
             
@@ -373,7 +372,7 @@ public class TaskStateServiceImpl implements ITaskStateService {
      * 映射VLM状态到任务状态
      */
     private TaskStatus mapVlmStatusToTaskStatus(String vlmStatus) {
-        if (StringUtils.isEmpty(vlmStatus)) {
+        if (vlmStatus == null || vlmStatus.trim().isEmpty()) {
             return TaskStatus.ERROR;
         }
         

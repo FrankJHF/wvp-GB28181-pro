@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -107,7 +106,7 @@ public class VLMCallbackProcessor {
         
         // 只处理紧急事件或包含快照的事件
         if ((event.getEmergencyExist() != null && event.getEmergencyExist()) || 
-            !StringUtils.isEmpty(event.getSnapshotBase64())) {
+            !(event.getSnapshotBase64() == null || event.getSnapshotBase64().trim().isEmpty())) {
             
             try {
                 createAlarmFromEvent(task, event, callback);
@@ -172,14 +171,14 @@ public class VLMCallbackProcessor {
     private void processEventTimeInfo(AnalysisAlarm alarm, VLMAnalysisResult.Event event) {
         try {
             // 设置告警时间
-            if (!StringUtils.isEmpty(event.getEventStartUtc())) {
+            if (!(event.getEventStartUtc() == null || event.getEventStartUtc().trim().isEmpty())) {
                 alarm.setEventStartTime(LocalDateTime.parse(event.getEventStartUtc(), UTC_FORMATTER));
                 alarm.setAlarmTime(alarm.getEventStartTime()); // 使用事件开始时间作为告警时间
             } else {
                 alarm.setAlarmTime(LocalDateTime.now());
             }
             
-            if (!StringUtils.isEmpty(event.getEventEndUtc())) {
+            if (!(event.getEventEndUtc() == null || event.getEventEndUtc().trim().isEmpty())) {
                 alarm.setEventEndTime(LocalDateTime.parse(event.getEventEndUtc(), UTC_FORMATTER));
             }
             
@@ -215,7 +214,7 @@ public class VLMCallbackProcessor {
      * 处理快照图片
      */
     private void processSnapshot(AnalysisAlarm alarm, VLMAnalysisResult.Event event) {
-        if (StringUtils.isEmpty(event.getSnapshotBase64())) {
+        if (event.getSnapshotBase64() == null || event.getSnapshotBase64().trim().isEmpty()) {
             return;
         }
         
@@ -270,15 +269,15 @@ public class VLMCallbackProcessor {
             throw new IllegalArgumentException("回调数据不能为空");
         }
         
-        if (StringUtils.isEmpty(callback.getJobId())) {
+        if (callback.getJobId() == null || callback.getJobId().trim().isEmpty()) {
             throw new IllegalArgumentException("VLM作业ID不能为空");
         }
         
-        if (StringUtils.isEmpty(callback.getDeviceId())) {
+        if (callback.getDeviceId() == null || callback.getDeviceId().trim().isEmpty()) {
             throw new IllegalArgumentException("设备ID不能为空");
         }
         
-        if (StringUtils.isEmpty(callback.getChannelId())) {
+        if (callback.getChannelId() == null || callback.getChannelId().trim().isEmpty()) {
             throw new IllegalArgumentException("通道ID不能为空");
         }
     }

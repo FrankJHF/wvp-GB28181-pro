@@ -19,8 +19,8 @@
 #
 ######### PARAM ######################################
 
-JAVA_OPT=-Xmx1024m
-JARFILE=`ls -1r *.jar 2>/dev/null | head -n 1`
+JAVA_OPT="-Xmx1024m -Dspring.profiles.active=dev -Dspring.config.location=file:${PWD}/target/"
+JARFILE=`ls -1r target/*.jar 2>/dev/null | head -n 1`
 PID_FILE=pid.file
 RUNNING=N
 PWD=`pwd`

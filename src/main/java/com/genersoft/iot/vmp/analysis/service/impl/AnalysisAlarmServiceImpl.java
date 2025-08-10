@@ -11,7 +11,6 @@ import com.genersoft.iot.vmp.conf.exception.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -49,7 +48,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
         validateAlarm(alarm, true);
         
         // 生成ID和设置时间
-        if (StringUtils.isEmpty(alarm.getId())) {
+        if (alarm.getId() == null || alarm.getId().trim().isEmpty()) {
             alarm.setId(UUID.randomUUID().toString().replace("-", ""));
         }
         if (alarm.getCreatedAt() == null) {
@@ -80,7 +79,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
     public boolean updateAlarmStatus(String alarmId, AlarmStatus status) throws ServiceException {
         log.info("更新告警状态，告警ID: {}, 状态: {}", alarmId, status.getDescription());
         
-        if (StringUtils.isEmpty(alarmId)) {
+        if (alarmId == null || alarmId.trim().isEmpty()) {
             throw new ServiceException("告警ID不能为空");
         }
         
@@ -129,7 +128,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
     public boolean deleteAlarm(String alarmId) throws ServiceException {
         log.info("删除分析告警: {}", alarmId);
         
-        if (StringUtils.isEmpty(alarmId)) {
+        if (alarmId == null || alarmId.trim().isEmpty()) {
             throw new ServiceException("告警ID不能为空");
         }
         
@@ -140,7 +139,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
         }
         
         // 删除快照文件（如果存在）
-        if (!StringUtils.isEmpty(alarm.getSnapshotPath())) {
+        if (!(alarm.getSnapshotPath() == null || alarm.getSnapshotPath().trim().isEmpty())) {
             try {
                 Path snapshotPath = Paths.get(alarm.getSnapshotPath());
                 if (Files.exists(snapshotPath)) {
@@ -165,7 +164,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Override
     public AnalysisAlarm getAlarmById(String alarmId) throws ServiceException {
-        if (StringUtils.isEmpty(alarmId)) {
+        if (alarmId == null || alarmId.trim().isEmpty()) {
             throw new ServiceException("告警ID不能为空");
         }
         
@@ -185,7 +184,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Override
     public List<AnalysisAlarm> getAlarmsByTaskId(String taskId) throws ServiceException {
-        if (StringUtils.isEmpty(taskId)) {
+        if (taskId == null || taskId.trim().isEmpty()) {
             throw new ServiceException("任务ID不能为空");
         }
         
@@ -194,7 +193,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Override
     public List<AnalysisAlarm> getAlarmsByDeviceAndChannel(String deviceId, String channelId) throws ServiceException {
-        if (StringUtils.isEmpty(deviceId) || StringUtils.isEmpty(channelId)) {
+        if (deviceId == null || deviceId.trim().isEmpty() || channelId == null || channelId.trim().isEmpty()) {
             throw new ServiceException("设备ID和通道ID不能为空");
         }
         
@@ -236,7 +235,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Override
     public long countAlarmsByTaskId(String taskId) throws ServiceException {
-        if (StringUtils.isEmpty(taskId)) {
+        if (taskId == null || taskId.trim().isEmpty()) {
             throw new ServiceException("任务ID不能为空");
         }
         
@@ -286,7 +285,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
     public int deleteAlarmsByTaskId(String taskId) throws ServiceException {
         log.info("删除任务关联告警，任务ID: {}", taskId);
         
-        if (StringUtils.isEmpty(taskId)) {
+        if (taskId == null || taskId.trim().isEmpty()) {
             throw new ServiceException("任务ID不能为空");
         }
         
@@ -295,7 +294,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
         
         // 删除快照文件
         for (AnalysisAlarm alarm : alarms) {
-            if (!StringUtils.isEmpty(alarm.getSnapshotPath())) {
+            if (!(alarm.getSnapshotPath() == null || alarm.getSnapshotPath().trim().isEmpty())) {
                 try {
                     Path snapshotPath = Paths.get(alarm.getSnapshotPath());
                     if (Files.exists(snapshotPath)) {
@@ -361,7 +360,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Override
     public String getSnapshotPath(String alarmId) throws ServiceException {
-        if (StringUtils.isEmpty(alarmId)) {
+        if (alarmId == null || alarmId.trim().isEmpty()) {
             return null;
         }
         
@@ -373,7 +372,7 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
     public boolean isSnapshotExists(String alarmId) throws ServiceException {
         String snapshotPath = getSnapshotPath(alarmId);
         
-        if (StringUtils.isEmpty(snapshotPath)) {
+        if (snapshotPath == null || snapshotPath.trim().isEmpty()) {
             return false;
         }
         
@@ -394,19 +393,19 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
             throw new ServiceException("分析告警信息不能为空");
         }
         
-        if (StringUtils.isEmpty(alarm.getTaskId())) {
+        if (alarm.getTaskId() == null || alarm.getTaskId().trim().isEmpty()) {
             throw new ServiceException("任务ID不能为空");
         }
         
-        if (StringUtils.isEmpty(alarm.getDeviceId())) {
+        if (alarm.getDeviceId() == null || alarm.getDeviceId().trim().isEmpty()) {
             throw new ServiceException("设备ID不能为空");
         }
         
-        if (StringUtils.isEmpty(alarm.getChannelId())) {
+        if (alarm.getChannelId() == null || alarm.getChannelId().trim().isEmpty()) {
             throw new ServiceException("通道ID不能为空");
         }
         
-        if (StringUtils.isEmpty(alarm.getDescription())) {
+        if (alarm.getDescription() == null || alarm.getDescription().trim().isEmpty()) {
             throw new ServiceException("告警描述不能为空");
         }
         

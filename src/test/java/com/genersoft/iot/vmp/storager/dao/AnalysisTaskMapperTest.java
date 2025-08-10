@@ -308,7 +308,7 @@ class AnalysisTaskMapperTest {
         List<String> taskIds = Arrays.asList(testTask.getId(), task2.getId());
 
         // Act
-        int result = analysisTaskMapper.batchUpdateStatus(taskIds, TaskStatus.RUNNING);
+        int result = analysisTaskMapper.batchUpdateStatus(taskIds, TaskStatus.RUNNING, null);
 
         // Assert
         assertEquals(2, result);

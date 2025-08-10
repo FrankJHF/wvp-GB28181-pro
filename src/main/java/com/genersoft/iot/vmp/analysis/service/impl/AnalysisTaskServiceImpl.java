@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -89,12 +88,12 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
         
         // 获取RTSP流地址
         String rtspUrl = getDeviceChannelRtspUrl(task.getDeviceId(), task.getChannelId());
-        if (StringUtils.isEmpty(rtspUrl)) {
+        if (rtspUrl == null || rtspUrl.trim().isEmpty()) {
             throw new ServiceException("无法获取设备通道的RTSP流地址");
         }
         
         // 生成ID和设置时间
-        if (StringUtils.isEmpty(task.getId())) {
+        if (task.getId() == null || task.getId().trim().isEmpty()) {
             task.setId(UUID.randomUUID().toString().replace("-", ""));
         }
         task.setRtspUrl(rtspUrl);
@@ -156,7 +155,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
     public boolean deleteTask(String taskId) throws ServiceException {
         log.info("删除分析任务: {}", taskId);
         
-        if (StringUtils.isEmpty(taskId)) {
+        if (taskId == null || taskId.trim().isEmpty()) {
             throw new ServiceException("任务ID不能为空");
         }
         
@@ -172,7 +171,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
         }
         
         // 停止VLM作业（如果存在）
-        if (!StringUtils.isEmpty(task.getVlmJobId())) {
+        if (!(task.getVlmJobId() == null || task.getVlmJobId().trim().isEmpty())) {
             try {
                 vlmClientService.stopJob(task.getVlmJobId());
             } catch (Exception e) {
@@ -192,7 +191,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
     @Override
     public AnalysisTask getTaskById(String taskId) throws ServiceException {
-        if (StringUtils.isEmpty(taskId)) {
+        if (taskId == null || taskId.trim().isEmpty()) {
             throw new ServiceException("任务ID不能为空");
         }
         
@@ -212,7 +211,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
     @Override
     public AnalysisTask getTaskByVlmJobId(String vlmJobId) throws ServiceException {
-        if (StringUtils.isEmpty(vlmJobId)) {
+        if (vlmJobId == null || vlmJobId.trim().isEmpty()) {
             throw new ServiceException("VLM作业ID不能为空");
         }
         
@@ -233,7 +232,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
     @Override
     public List<AnalysisTask> getTasksByDeviceAndChannel(String deviceId, String channelId) throws ServiceException {
-        if (StringUtils.isEmpty(deviceId) || StringUtils.isEmpty(channelId)) {
+        if (deviceId == null || deviceId.trim().isEmpty() || channelId == null || channelId.trim().isEmpty()) {
             throw new ServiceException("设备ID和通道ID不能为空");
         }
         
@@ -314,7 +313,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
     @Override
     public boolean canCreateTask(String deviceId, String channelId, String analysisCardId) throws ServiceException {
-        if (StringUtils.isEmpty(deviceId) || StringUtils.isEmpty(channelId) || StringUtils.isEmpty(analysisCardId)) {
+        if (deviceId == null || deviceId.trim().isEmpty() || channelId == null || channelId.trim().isEmpty() || analysisCardId == null || analysisCardId.trim().isEmpty()) {
             return false;
         }
         
@@ -351,7 +350,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
         
         // 临时实现：假设所有设备通道都有效
         log.warn("使用模拟设备通道验证，生产环境需要集成真实的设备服务");
-        return !StringUtils.isEmpty(deviceId) && !StringUtils.isEmpty(channelId);
+        return !(deviceId == null || deviceId.trim().isEmpty()) && !(channelId == null || channelId.trim().isEmpty());
     }
 
     /**
@@ -379,7 +378,7 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
             throw new ServiceException("分析任务信息不能为空");
         }
         
-        if (StringUtils.isEmpty(task.getTaskName())) {
+        if (task.getTaskName() == null || task.getTaskName().trim().isEmpty()) {
             throw new ServiceException("任务名称不能为空");
         }
         
@@ -387,19 +386,19 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
             throw new ServiceException("任务名称长度不能超过100个字符");
         }
         
-        if (StringUtils.isEmpty(task.getAnalysisCardId())) {
+        if (task.getAnalysisCardId() == null || task.getAnalysisCardId().trim().isEmpty()) {
             throw new ServiceException("分析卡片ID不能为空");
         }
         
-        if (StringUtils.isEmpty(task.getDeviceId())) {
+        if (task.getDeviceId() == null || task.getDeviceId().trim().isEmpty()) {
             throw new ServiceException("设备ID不能为空");
         }
         
-        if (StringUtils.isEmpty(task.getChannelId())) {
+        if (task.getChannelId() == null || task.getChannelId().trim().isEmpty()) {
             throw new ServiceException("通道ID不能为空");
         }
         
-        if (isCreate && StringUtils.isEmpty(task.getCreatedBy())) {
+        if (isCreate && (task.getCreatedBy() == null || task.getCreatedBy().trim().isEmpty())) {
             throw new ServiceException("创建人不能为空");
         }
     }

@@ -75,6 +75,25 @@ public class AnalysisAlarm {
     @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
+    @Schema(description = "更新时间")
+    @JsonProperty("updated_at")
+    private LocalDateTime updatedAt;
+
+    @Schema(description = "事件描述")
+    @JsonProperty("event_description")
+    private String eventDescription;
+
+    @Schema(description = "是否紧急事件")
+    @JsonProperty("emergency_exist")
+    private Boolean emergencyExist;
+
+    @Schema(description = "快照base64编码")
+    @JsonProperty("snapshot_base64")
+    private String snapshotBase64;
+
+    @Schema(description = "是否已处理")
+    private Boolean processed;
+
     // 关联的任务信息（非数据库字段）
     @Schema(description = "关联的分析任务信息")
     private transient AnalysisTask analysisTask;
@@ -86,7 +105,8 @@ public class AnalysisAlarm {
      * @return true如果是紧急告警
      */
     public boolean isEmergency() {
-        return description != null && description.toLowerCase().contains("emergency");
+        return (emergencyExist != null && emergencyExist) || 
+               (description != null && description.toLowerCase().contains("emergency"));
     }
 
     /**
@@ -94,7 +114,8 @@ public class AnalysisAlarm {
      * @return true如果已处理
      */
     public boolean isProcessed() {
-        return status != null && status.isProcessed();
+        return (processed != null && processed) || 
+               (status != null && status.isProcessed());
     }
 
     /**

@@ -9,7 +9,6 @@ import com.genersoft.iot.vmp.conf.exception.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -42,7 +41,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
         validateCard(card, true);
         
         // 生成ID和设置时间
-        if (StringUtils.isEmpty(card.getId())) {
+        if (card.getId() == null || card.getId().trim().isEmpty()) {
             card.setId(UUID.randomUUID().toString().replace("-", ""));
         }
         card.setCreatedAt(LocalDateTime.now());
@@ -52,7 +51,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
         if (card.getEnabled() == null) {
             card.setEnabled(true);
         }
-        if (StringUtils.isEmpty(card.getModelType())) {
+        if (card.getModelType() == null || card.getModelType().trim().isEmpty()) {
             card.setModelType("videollama3");
         }
         
@@ -93,7 +92,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
     public boolean deleteCard(String cardId) throws ServiceException {
         log.info("删除分析卡片: {}", cardId);
         
-        if (StringUtils.isEmpty(cardId)) {
+        if (cardId == null || cardId.trim().isEmpty()) {
             throw new ServiceException("卡片ID不能为空");
         }
         
@@ -120,7 +119,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
 
     @Override
     public AnalysisCard getCardById(String cardId) throws ServiceException {
-        if (StringUtils.isEmpty(cardId)) {
+        if (cardId == null || cardId.trim().isEmpty()) {
             throw new ServiceException("卡片ID不能为空");
         }
         
@@ -156,7 +155,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
 
     @Override
     public List<AnalysisCard> getCardsByCreatedBy(String createdBy) throws ServiceException {
-        if (StringUtils.isEmpty(createdBy)) {
+        if (createdBy == null || createdBy.trim().isEmpty()) {
             throw new ServiceException("创建人不能为空");
         }
         
@@ -168,7 +167,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
     public boolean enableCard(String cardId, boolean enabled) throws ServiceException {
         log.info("{}分析卡片: {}", enabled ? "启用" : "禁用", cardId);
         
-        if (StringUtils.isEmpty(cardId)) {
+        if (cardId == null || cardId.trim().isEmpty()) {
             throw new ServiceException("卡片ID不能为空");
         }
         
@@ -207,7 +206,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
 
     @Override
     public boolean canDeleteCard(String cardId) throws ServiceException {
-        if (StringUtils.isEmpty(cardId)) {
+        if (cardId == null || cardId.trim().isEmpty()) {
             return false;
         }
         
@@ -226,15 +225,15 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
     public AnalysisCard copyCard(String cardId, String newTitle, String createdBy) throws ServiceException {
         log.info("复制分析卡片，源ID: {}, 新标题: {}", cardId, newTitle);
         
-        if (StringUtils.isEmpty(cardId)) {
+        if (cardId == null || cardId.trim().isEmpty()) {
             throw new ServiceException("源卡片ID不能为空");
         }
         
-        if (StringUtils.isEmpty(newTitle)) {
+        if (newTitle == null || newTitle.trim().isEmpty()) {
             throw new ServiceException("新标题不能为空");
         }
         
-        if (StringUtils.isEmpty(createdBy)) {
+        if (createdBy == null || createdBy.trim().isEmpty()) {
             throw new ServiceException("创建人不能为空");
         }
         
@@ -278,7 +277,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
             throw new ServiceException("分析卡片信息不能为空");
         }
         
-        if (StringUtils.isEmpty(card.getTitle())) {
+        if (card.getTitle() == null || card.getTitle().trim().isEmpty()) {
             throw new ServiceException("卡片标题不能为空");
         }
         
@@ -286,11 +285,11 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
             throw new ServiceException("卡片标题长度不能超过100个字符");
         }
         
-        if (StringUtils.isEmpty(card.getPrompt())) {
+        if (card.getPrompt() == null || card.getPrompt().trim().isEmpty()) {
             throw new ServiceException("分析提示词不能为空");
         }
         
-        if (isCreate && StringUtils.isEmpty(card.getCreatedBy())) {
+        if (isCreate && (card.getCreatedBy() == null || card.getCreatedBy().trim().isEmpty())) {
             throw new ServiceException("创建人不能为空");
         }
         

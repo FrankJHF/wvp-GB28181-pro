@@ -88,7 +88,7 @@ class VLMClientServiceImplTest {
 
     @Test
     @DisplayName("测试创建作业成功")
-    void testCreateJobSuccess() {
+    void testCreateJobSuccess() throws Exception {
         // Arrange
         ResponseEntity<VLMJobResponse> responseEntity = 
                 new ResponseEntity<>(jobResponse, HttpStatus.OK);
@@ -120,7 +120,7 @@ class VLMClientServiceImplTest {
 
     @Test
     @DisplayName("测试创建作业失败")
-    void testCreateJobFailed() {
+    void testCreateJobFailed() throws Exception {
         // Arrange
         jobResponse.setErrorCode("INVALID_PARAMS");
         jobResponse.setMessage("Invalid parameters");
@@ -146,7 +146,7 @@ class VLMClientServiceImplTest {
 
     @Test
     @DisplayName("测试创建作业网络异常")
-    void testCreateJobNetworkException() {
+    void testCreateJobNetworkException() throws Exception {
         // Arrange
         when(restTemplate.exchange(
                 anyString(),
@@ -165,7 +165,7 @@ class VLMClientServiceImplTest {
 
     @Test
     @DisplayName("测试启动作业成功")
-    void testStartJobSuccess() {
+    void testStartJobSuccess() throws Exception {
         // Arrange
         ResponseEntity<VLMJobActionResponse> responseEntity = 
                 new ResponseEntity<>(actionResponse, HttpStatus.OK);
@@ -189,7 +189,7 @@ class VLMClientServiceImplTest {
 
     @Test
     @DisplayName("测试强制重启作业")
-    void testStartJobWithForceRestart() {
+    void testStartJobWithForceRestart() throws Exception {
         // Arrange
         ResponseEntity<VLMJobActionResponse> responseEntity = 
                 new ResponseEntity<>(actionResponse, HttpStatus.OK);
@@ -217,7 +217,7 @@ class VLMClientServiceImplTest {
 
     @Test
     @DisplayName("测试暂停作业成功")
-    void testPauseJobSuccess() {
+    void testPauseJobSuccess() throws Exception {
         // Arrange
         actionResponse.setPreviousStatus("running");
         actionResponse.setCurrentStatus("paused");
@@ -245,7 +245,7 @@ class VLMClientServiceImplTest {
 
     @Test
     @DisplayName("测试查询作业状态成功")
-    void testGetJobStatusSuccess() {
+    void testGetJobStatusSuccess() throws Exception {
         // Arrange
         jobResponse.setStatus("running");
         jobResponse.setMessage("Job is running");
@@ -272,7 +272,7 @@ class VLMClientServiceImplTest {
 
     @Test
     @DisplayName("测试健康检查成功")
-    void testCheckHealthSuccess() {
+    void testCheckHealthSuccess() throws Exception {
         // Arrange
         IVLMClientService.VLMHealthResponse healthResponse = 
                 new IVLMClientService.VLMHealthResponse("healthy", "All systems operational");
@@ -301,7 +301,7 @@ class VLMClientServiceImplTest {
 
     @Test
     @DisplayName("测试所有操作的异常处理")
-    void testOperationsExceptionHandling() {
+    void testOperationsExceptionHandling() throws Exception {
         // Arrange
         when(restTemplate.exchange(
                 anyString(),

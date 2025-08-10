@@ -82,7 +82,7 @@ public class AnalysisCardController {
             @Parameter(name = "cardId", description = "卡片ID", required = true) 
             @PathVariable String cardId) {
         
-        if (StringUtils.isEmpty(cardId)) {
+        if ((cardId == null || cardId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "卡片ID不能为空");
         }
         
@@ -147,7 +147,7 @@ public class AnalysisCardController {
             @PathVariable String cardId,
             @RequestBody AnalysisCard card) {
         
-        if (StringUtils.isEmpty(cardId)) {
+        if ((cardId == null || cardId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "卡片ID不能为空");
         }
         
@@ -191,7 +191,7 @@ public class AnalysisCardController {
             @Parameter(name = "cardId", description = "卡片ID", required = true) 
             @PathVariable String cardId) {
         
-        if (StringUtils.isEmpty(cardId)) {
+        if ((cardId == null || cardId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "卡片ID不能为空");
         }
         
@@ -236,7 +236,7 @@ public class AnalysisCardController {
             @Parameter(name = "enabled", description = "是否启用", required = true) 
             @RequestParam boolean enabled) {
         
-        if (StringUtils.isEmpty(cardId)) {
+        if ((cardId == null || cardId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "卡片ID不能为空");
         }
         

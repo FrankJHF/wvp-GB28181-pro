@@ -217,4 +217,20 @@ public interface AnalysisAlarmMapper {
      */
     @Delete("DELETE FROM wvp_analysis_alarm WHERE task_id = #{taskId}")
     int deleteByTaskId(@Param("taskId") String taskId);
+
+    /**
+     * 根据设备ID查询告警
+     */
+    @Select("SELECT id, task_id as taskId, device_id as deviceId, device_name as deviceName, " +
+            "channel_id as channelId, channel_name as channelName, analysis_type as analysisType, " +
+            "description, snapshot_path as snapshotPath, alarm_time as alarmTime, " +
+            "event_start_time as eventStartTime, event_end_time as eventEndTime, event_time_range as eventTimeRange, " +
+            "video_window_info as videoWindowInfo, status, created_at as createdAt " +
+            "FROM wvp_analysis_alarm WHERE device_id = #{deviceId} ORDER BY alarm_time DESC")
+    @Results({
+        @Result(property = "videoWindowInfo", column = "video_window_info", 
+                typeHandler = com.genersoft.iot.vmp.utils.JsonTypeHandler.class),
+        @Result(property = "status", column = "status", javaType = AlarmStatus.class)
+    })
+    List<AnalysisAlarm> selectByDeviceId(@Param("deviceId") String deviceId);
 }

@@ -185,7 +185,7 @@ class AnalysisTaskServiceImplTest {
 
     @Test
     @DisplayName("测试删除运行中的任务")
-    void testDeleteRunningTask() {
+    void testDeleteRunningTask() throws Exception {
         // Arrange
         testTask.setStatus(TaskStatus.RUNNING);
         when(analysisTaskMapper.selectById("test-task-001")).thenReturn(testTask);
@@ -216,7 +216,7 @@ class AnalysisTaskServiceImplTest {
 
     @Test
     @DisplayName("测试根据设备和通道查询任务")
-    void testGetTasksByDeviceAndChannel() {
+    void testGetTasksByDeviceAndChannel() throws Exception {
         // Arrange
         List<AnalysisTask> expectedTasks = Arrays.asList(testTask);
         when(analysisTaskMapper.selectByDeviceAndChannel("34020000001320000001", "34020000001310000001"))
@@ -237,7 +237,7 @@ class AnalysisTaskServiceImplTest {
 
     @Test
     @DisplayName("测试检查是否可以创建任务 - 可以创建")
-    void testCanCreateTaskSuccess() {
+    void testCanCreateTaskSuccess() throws Exception {
         // Arrange
         when(analysisTaskMapper.selectByDeviceAndChannel("34020000001320000001", "34020000001310000001"))
                 .thenReturn(Arrays.asList());
@@ -252,7 +252,7 @@ class AnalysisTaskServiceImplTest {
 
     @Test
     @DisplayName("测试检查是否可以创建任务 - 已存在相同任务")
-    void testCanCreateTaskAlreadyExists() {
+    void testCanCreateTaskAlreadyExists() throws Exception {
         // Arrange
         AnalysisTask existingTask = new AnalysisTask();
         existingTask.setAnalysisCardId("card-001");
@@ -271,7 +271,7 @@ class AnalysisTaskServiceImplTest {
 
     @Test
     @DisplayName("测试批量删除任务")
-    void testBatchDeleteTasks() {
+    void testBatchDeleteTasks() throws Exception {
         // Arrange
         List<String> taskIds = Arrays.asList("task-001", "task-002", "task-003");
         
@@ -306,7 +306,7 @@ class AnalysisTaskServiceImplTest {
 
     @Test
     @DisplayName("测试批量删除包含运行中任务")
-    void testBatchDeleteTasksWithRunningTask() {
+    void testBatchDeleteTasksWithRunningTask() throws Exception {
         // Arrange
         List<String> taskIds = Arrays.asList("task-001", "task-002");
         
