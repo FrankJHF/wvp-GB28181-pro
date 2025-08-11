@@ -55,7 +55,7 @@
       :visible.sync="dialogVisible"
       :card="currentCard"
       :is-edit="isEdit"
-      @success="getList"
+      @success="handleCreationSuccess"
     />
   </div>
 </template>
@@ -160,6 +160,18 @@ export default {
         })
         this.getList()
       }).catch(() => {})
+    },
+    handleCreationSuccess() {
+      // 重置筛选条件，确保新建的项目能显示
+      this.listQuery = {
+        page: 1,
+        limit: 20,
+        title: '',
+        enabled: null,
+        modelType: '',
+        createdBy: ''
+      }
+      this.getList()
     }
   }
 }

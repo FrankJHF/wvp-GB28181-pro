@@ -54,6 +54,16 @@ public class MybatisConfig {
             config.setLogImpl(StdOutImpl.class);
         }
         config.setMapUnderscoreToCamelCase(true);
+        
+        // 注册JsonTypeHandler - 为特定类型注册
+        config.getTypeHandlerRegistry().register(com.genersoft.iot.vmp.utils.JsonTypeHandler.class);
+        config.getTypeHandlerRegistry().register(com.genersoft.iot.vmp.analysis.bean.VideoWindowInfo.class, 
+            com.genersoft.iot.vmp.utils.JsonTypeHandler.class);
+        config.getTypeHandlerRegistry().register(java.util.Map.class, 
+            com.genersoft.iot.vmp.utils.JsonTypeHandler.class);
+        config.getTypeHandlerRegistry().register(java.util.List.class, 
+            com.genersoft.iot.vmp.utils.JsonTypeHandler.class);
+            
         sqlSessionFactory.setConfiguration(config);
         sqlSessionFactory.setDatabaseIdProvider(databaseIdProvider);
         return sqlSessionFactory.getObject();

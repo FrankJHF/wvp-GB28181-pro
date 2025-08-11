@@ -91,7 +91,7 @@
       :task="currentTask"
       :is-edit="isEdit"
       :default-card-id="defaultCardId"
-      @success="getList"
+      @success="handleCreationSuccess"
     />
   </div>
 </template>
@@ -139,8 +139,8 @@ export default {
     getList() {
       this.loading = true
       getTasks(this.listQuery).then(response => {
-        this.list = response.data.list
-        this.total = response.data.total
+        this.list = response.data.list || response.data
+        this.total = response.data.total || (response.data.list ? response.data.list.length : 0)
         this.loading = false
       }).catch(() => {
         this.loading = false
@@ -259,6 +259,19 @@ export default {
     },
     canDelete(row) {
       return ['created', 'stopped', 'error'].includes(row.status)
+    },
+    handleCreationSuccess() {
+      // 重置筛选条件，确保新建的任务能显示
+      this.listQuery = {
+        page: 1,
+        limit: 20,
+        taskName: '',
+        status: '',
+        deviceId: '',
+        channelId: '',
+        analysisCardId: this.defaultCardId || '' // 保留默认卡片ID的筛选
+      }
+      this.getList()
     }
   }
 }

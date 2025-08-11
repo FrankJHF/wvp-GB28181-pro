@@ -83,14 +83,17 @@ export default {
 
         console.log('设备查询响应:', response)
         const devices = response.data?.list || []
+        console.log('设备数据:', devices.map(d => ({ deviceId: d.deviceId, name: d.name })))
         this.cascaderOptions = devices.map(device => {
           this.devicesMap.set(device.deviceId, device)
-          return {
+          const option = {
             id: device.deviceId,
             name: `${device.name || device.deviceId}`,
             deviceInfo: device,
             leaf: false
           }
+          console.log('创建设备选项:', option)
+          return option
         })
       } catch (error) {
         console.error('加载设备列表失败:', error)
@@ -105,18 +108,34 @@ export default {
         return
       }
 
-      // 确保传递给API的是纯设备ID，不包含通道ID
+      // 获取原始设备ID - node.value在el-cascader中对应配置的value字段
       let deviceId = node.value
+      
+      // 确保传递给API的是纯设备ID，不包含通道ID
       if (typeof deviceId === 'string' && deviceId.includes('-')) {
         // 如果ID包含连字符，取第一部分作为设备ID
         deviceId = deviceId.split('-')[0]
       }
       
-      console.log('loadChannels - 设备ID:', deviceId, '原始node.value:', node.value)
+      console.log('loadChannels - 节点信息:', {
+        level: node.level,
+        value: node.value,
+        label: node.label,
+        leaf: node.leaf,
+        nodeType: typeof node.value,
+        parent: node.parent?.value
+      })
 
-      // 验证设备ID格式 - GB28181设备ID通常为20位数字
-      if (!deviceId || typeof deviceId !== 'string' || !/^\d{20}$/.test(deviceId)) {
-        console.error('无效的设备ID格式:', deviceId)
+      // 验证设备ID格式 - GB28181设备ID通常为20位数字，但也允许其他格式
+      if (!deviceId || typeof deviceId !== 'string' || deviceId.trim() === '') {
+        console.error('无效的设备ID:', deviceId)
+        resolve([])
+        return
+      }
+
+      // 放宽ID格式验证，允许更灵活的设备ID格式
+      if (!/^[A-Za-z0-9]{10,30}$/.test(deviceId)) {
+        console.error('设备ID格式不符合预期:', deviceId, '应为10-30位字母数字组合')
         resolve([])
         return
       }

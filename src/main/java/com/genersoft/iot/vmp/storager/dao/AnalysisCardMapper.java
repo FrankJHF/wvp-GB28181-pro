@@ -50,24 +50,14 @@ public interface AnalysisCardMapper {
     /**
      * 根据ID查询分析卡片
      */
-    @Select("SELECT id, title, description, icon, " +
-            "tags, enabled, prompt, model_type as modelType, analysis_config as analysisConfig, " +
-            "created_by as createdBy, created_at as createdAt, updated_at as updatedAt " +
-            "FROM wvp_analysis_card WHERE id = #{id}")
-    @Results({
-        @Result(property = "tags", column = "tags", typeHandler = com.genersoft.iot.vmp.utils.JsonTypeHandler.class),
-        @Result(property = "analysisConfig", column = "analysis_config", typeHandler = com.genersoft.iot.vmp.utils.JsonTypeHandler.class)
-    })
+    @Select("SELECT * FROM wvp_analysis_card WHERE id = #{id}")
     AnalysisCard selectById(@Param("id") String id);
 
     /**
      * 查询所有分析卡片
      */
     @Select({" <script>" +
-            "SELECT id, title, description, icon, " +
-            "tags, enabled, prompt, model_type as modelType, analysis_config as analysisConfig, " +
-            "created_by as createdBy, created_at as createdAt, updated_at as updatedAt " +
-            "FROM wvp_analysis_card " +
+            "SELECT * FROM wvp_analysis_card " +
             "<where>" +
             "<if test=\"enabled != null\"> AND enabled = #{enabled}</if>" +
             "<if test=\"createdBy != null\"> AND created_by = #{createdBy}</if>" +
@@ -75,10 +65,6 @@ public interface AnalysisCardMapper {
             "</where>" +
             "ORDER BY created_at DESC" +
             " </script>"})
-    @Results({
-        @Result(property = "tags", column = "tags", typeHandler = com.genersoft.iot.vmp.utils.JsonTypeHandler.class),
-        @Result(property = "analysisConfig", column = "analysis_config", typeHandler = com.genersoft.iot.vmp.utils.JsonTypeHandler.class)
-    })
     List<AnalysisCard> selectAll(@Param("enabled") Boolean enabled, 
                                 @Param("createdBy") String createdBy,
                                 @Param("title") String title);
@@ -86,27 +72,13 @@ public interface AnalysisCardMapper {
     /**
      * 查询启用的分析卡片
      */
-    @Select("SELECT id, title, description, icon, " +
-            "tags, enabled, prompt, model_type as modelType, analysis_config as analysisConfig, " +
-            "created_by as createdBy, created_at as createdAt, updated_at as updatedAt " +
-            "FROM wvp_analysis_card WHERE enabled = true ORDER BY created_at DESC")
-    @Results({
-        @Result(property = "tags", column = "tags", typeHandler = com.genersoft.iot.vmp.utils.JsonTypeHandler.class),
-        @Result(property = "analysisConfig", column = "analysis_config", typeHandler = com.genersoft.iot.vmp.utils.JsonTypeHandler.class)
-    })
+    @Select("SELECT * FROM wvp_analysis_card WHERE enabled = true ORDER BY created_at DESC")
     List<AnalysisCard> selectEnabled();
 
     /**
      * 根据创建人查询分析卡片
      */
-    @Select("SELECT id, title, description, icon, " +
-            "tags, enabled, prompt, model_type as modelType, analysis_config as analysisConfig, " +
-            "created_by as createdBy, created_at as createdAt, updated_at as updatedAt " +
-            "FROM wvp_analysis_card WHERE created_by = #{createdBy} ORDER BY created_at DESC")
-    @Results({
-        @Result(property = "tags", column = "tags", typeHandler = com.genersoft.iot.vmp.utils.JsonTypeHandler.class),
-        @Result(property = "analysisConfig", column = "analysis_config", typeHandler = com.genersoft.iot.vmp.utils.JsonTypeHandler.class)
-    })
+    @Select("SELECT * FROM wvp_analysis_card WHERE created_by = #{createdBy} ORDER BY created_at DESC")
     List<AnalysisCard> selectByCreatedBy(@Param("createdBy") String createdBy);
 
     /**
@@ -127,7 +99,7 @@ public interface AnalysisCardMapper {
     @Update({" <script>" +
             "UPDATE wvp_analysis_card SET enabled = #{enabled}, updated_at = NOW() " +
             "WHERE id IN " +
-            "<foreach collection=\"ids\" item=\"id\" open=\"(\" separator=\",\" close=\")\">" +
+            "<foreach collection=\"ids\" item=\"id\" open=\"(\" separator=\",\" close=\" )\">" +
             "#{id}" +
             "</foreach>" +
             " </script>"})

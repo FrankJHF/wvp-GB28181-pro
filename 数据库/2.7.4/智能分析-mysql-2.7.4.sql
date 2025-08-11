@@ -77,15 +77,15 @@ CREATE TABLE IF NOT EXISTS wvp_analysis_alarm (
 );
 
 -- 插入示例分析卡片数据
-INSERT INTO wvp_analysis_card (id, title, description, icon, tags, enabled, prompt, model_type, analysis_config, created_by) VALUES 
-('fire-detection', '火灾检测', '识别视频中的火焰和烟雾，及时发现火灾隐患', '/icons/fire.png', '["安全", "火灾", "预警"]', TRUE, 
-'请仔细分析这个视频片段，检测是否存在火焰、烟雾或其他火灾迹象。如果发现异常情况，请详细描述火灾的位置、严重程度和可能的危险性。', 
-'videollama3', '{"confidence_threshold": 0.8, "detection_interval": 2}', 'admin'),
+INSERT INTO wvp_analysis_card (id, title, description, icon, tags, enabled, prompt, model_type, analysis_config, created_by) VALUES
+('fire-emergency-detection', '消防应急事件检测', '实时监测区域内是否存在消防应急事件，包括火焰、烟雾、爆炸等异常现象', '/icons/fire.png', '["智慧消防", "公共安全", "安全生产"]', TRUE,
+'实时监测视频区域的消防应急事件，包装抽烟、爆炸、火焰等异常现象。',
+'SYSU-FireVED-v2', '{"confidence_threshold": 0.8, "detection_interval": 2}', 'admin'),
 
-('person-intrusion', '人员入侵检测', '检测禁区内的人员入侵行为', '/icons/person.png', '["安全", "入侵", "监控"]', TRUE,
-'分析视频中是否有人员进入禁止区域。请关注人员的行为特征，如果发现有人员在不应该出现的区域活动，请详细描述入侵者的位置、数量和行为。',
-'videollama3', '{"confidence_threshold": 0.75, "detection_interval": 3}', 'admin'),
+('illegal-fire-detection', '违规用火检测', '实时监测火灾高风险区域内的违规用火行为，包括抽烟、纵火、违规动火作业等', '/icons/person.png', '["智慧消防", "安全生产"]', TRUE,
+'实时监测区域的违规用火行为，包装抽烟、纵火、违规动火作业等。',
+'SYSU-FireVED-v2', '{"confidence_threshold": 0.75, "detection_interval": 3}', 'admin'),
 
-('vehicle-detection', '车辆违规检测', '检测违规停车、逆行等交通违法行为', '/icons/vehicle.png', '["交通", "违规", "监控"]', TRUE,
-'分析视频中的车辆行为，检测是否存在违规停车、逆行、超速或其他交通违法行为。如果发现违规行为，请描述车辆类型、违规类型和位置。',
-'videollama3', '{"confidence_threshold": 0.7, "detection_interval": 5}', 'admin');
+('fire-lane-occupation', '消防通道占用检测', '实时监测消防通道、安全出口区域的违规占用行为，包括杂物堆积、车辆违停等', '/icons/vehicle.png', '["智慧消防", "公共安全"]', TRUE,
+'实时监测消防通道、安全出口区域的违规占用行为，包括杂物堆积、车辆违停等。',
+'SYSU-FireVED-v2', '{"confidence_threshold": 0.7, "detection_interval": 5}', 'admin');
