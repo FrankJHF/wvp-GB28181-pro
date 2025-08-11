@@ -267,19 +267,19 @@ class AnalysisCardMapperTest {
         analysisCardMapper.insert(card2);
 
         // Act & Assert
-        long totalCount = analysisCardMapper.count(null, null);
+        long totalCount = analysisCardMapper.count(null, null, null);
         assertEquals(2, totalCount);
 
-        long enabledCount = analysisCardMapper.count(true, null);
+        long enabledCount = analysisCardMapper.count(true, null, null);
         assertEquals(1, enabledCount);
 
-        long disabledCount = analysisCardMapper.count(false, null);
+        long disabledCount = analysisCardMapper.count(false, null, null);
         assertEquals(1, disabledCount);
 
-        long adminCount = analysisCardMapper.count(null, "admin");
+        long adminCount = analysisCardMapper.count(null, "admin", null);
         assertEquals(1, adminCount);
 
-        long userCount = analysisCardMapper.count(null, "user1");
+        long userCount = analysisCardMapper.count(null, "user1", null);
         assertEquals(1, userCount);
     }
 

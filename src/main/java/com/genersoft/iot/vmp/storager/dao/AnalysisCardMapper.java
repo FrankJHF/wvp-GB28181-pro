@@ -60,7 +60,7 @@ public interface AnalysisCardMapper {
             "SELECT * FROM wvp_analysis_card " +
             "<where>" +
             "<if test=\"enabled != null\"> AND enabled = #{enabled}</if>" +
-            "<if test=\"createdBy != null\"> AND created_by = #{createdBy}</if>" +
+            "<if test=\"createdBy != null and createdBy != ''\"> AND created_by = #{createdBy}</if>" +
             "<if test=\"title != null and title != ''\"> AND title LIKE CONCAT('%', #{title}, '%')</if>" +
             "</where>" +
             "ORDER BY created_at DESC" +
@@ -88,10 +88,11 @@ public interface AnalysisCardMapper {
             "SELECT COUNT(*) FROM wvp_analysis_card " +
             "<where>" +
             "<if test=\"enabled != null\"> AND enabled = #{enabled}</if>" +
-            "<if test=\"createdBy != null\"> AND created_by = #{createdBy}</if>" +
+            "<if test=\"createdBy != null and createdBy != ''\"> AND created_by = #{createdBy}</if>" +
+            "<if test=\"title != null and title != ''\"> AND title LIKE CONCAT('%', #{title}, '%')</if>" +
             "</where>" +
             " </script>"})
-    long count(@Param("enabled") Boolean enabled, @Param("createdBy") String createdBy);
+    long count(@Param("enabled") Boolean enabled, @Param("createdBy") String createdBy, @Param("title") String title);
 
     /**
      * 批量启用/禁用分析卡片

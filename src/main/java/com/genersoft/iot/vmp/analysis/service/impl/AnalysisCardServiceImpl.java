@@ -15,6 +15,7 @@ import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -140,12 +141,25 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
 
     @Override
     public PageInfo<AnalysisCard> getCardPage(int pageNum, int pageSize, Boolean enabled, String createdBy, String title) throws ServiceException {
-        log.debug("分页查询分析卡片，页码: {}, 页面大小: {}", pageNum, pageSize);
+        log.info("=== 智能分析卡片分页查询开始 ===");
+        log.info("查询参数: pageNum={}, pageSize={}, enabled={}, createdBy={}, title={}", pageNum, pageSize, enabled, createdBy, title);
         
+        // 使用PageHelper进行分页
         PageHelper.startPage(pageNum, pageSize);
         List<AnalysisCard> cards = analysisCardMapper.selectAll(enabled, createdBy, title);
+        PageInfo<AnalysisCard> pageInfo = new PageInfo<>(cards);
         
-        return new PageInfo<>(cards);
+        log.info("数据库查询完成，返回记录数: {}", cards != null ? cards.size() : 0);
+        
+        if (cards == null || cards.isEmpty()) {
+            log.warn("查询结果为空！检查数据库连接和数据是否存在");
+        }
+        
+        log.info("分页信息: total={}, pages={}, pageNum={}, pageSize={}", 
+                pageInfo.getTotal(), pageInfo.getPages(), pageInfo.getPageNum(), pageInfo.getPageSize());
+        log.info("=== 智能分析卡片分页查询结束 ===");
+        
+        return pageInfo;
     }
 
     @Override
@@ -217,7 +231,7 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
 
     @Override
     public long countCards(Boolean enabled, String createdBy) throws ServiceException {
-        return analysisCardMapper.count(enabled, createdBy);
+        return analysisCardMapper.count(enabled, createdBy, null);
     }
 
     @Override

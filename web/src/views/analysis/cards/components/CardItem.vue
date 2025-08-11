@@ -94,11 +94,13 @@ export default {
   computed: {
     canEdit() {
       // 这里可以根据用户权限判断是否可以编辑
-      return this.$store.getters.roles.includes('admin')
+      // 暂时允许所有已登录用户编辑，或者检查用户名是否为admin
+      return this.$store.getters.token && this.$store.getters.name === 'admin'
     },
     canDelete() {
       // 这里可以根据用户权限判断是否可以删除
-      return this.$store.getters.roles.includes('admin')
+      // 暂时允许所有已登录用户删除，或者检查用户名是否为admin
+      return this.$store.getters.token && this.$store.getters.name === 'admin'
     }
   },
   methods: {
