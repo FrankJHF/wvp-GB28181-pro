@@ -5,8 +5,11 @@ import com.genersoft.iot.vmp.analysis.service.IVLMClientService;
 import com.genersoft.iot.vmp.analysis.bean.AnalysisTask;
 import com.genersoft.iot.vmp.analysis.bean.TaskAction;
 import com.genersoft.iot.vmp.analysis.bean.TaskStatus;
+import com.genersoft.iot.vmp.analysis.bean.VLMStatusMapper;
 import com.genersoft.iot.vmp.analysis.bean.dto.VLMJobActionResponse;
-import com.genersoft.iot.vmp.analysis.bean.dto.VLMJobResponse;
+import com.genersoft.iot.vmp.analysis.bean.dto.JobStatusResponse;
+import com.genersoft.iot.vmp.analysis.bean.dto.JobStatusUpdateRequest;
+import com.genersoft.iot.vmp.analysis.bean.dto.JobCancelResponse;
 import com.genersoft.iot.vmp.storager.dao.AnalysisTaskMapper;
 import com.genersoft.iot.vmp.conf.exception.ServiceException;
 
@@ -116,7 +119,7 @@ public class TaskStateServiceImpl implements ITaskStateService {
             }
             
             // 查询VLM作业状态
-            VLMJobResponse vlmJob = vlmClientService.getJobStatus(task.getVlmJobId());
+            JobStatusResponse vlmJob = vlmClientService.getJobStatus(task.getVlmJobId());
             if (vlmJob == null) {
                 log.warn("VLM作业状态查询失败，任务ID: {}, VLM作业ID: {}", taskId, task.getVlmJobId());
                 return task.getStatus();
@@ -311,14 +314,26 @@ public class TaskStateServiceImpl implements ITaskStateService {
             VLMJobActionResponse response = callVlmService(task.getVlmJobId(), action, forceRestart);
             
             if (response != null && response.isSuccess()) {
-                // 操作成功，更新为最终状态
-                TaskStatus finalStatus = task.getFinalStatus(action);
-                task.setStatus(finalStatus);
+                // 操作成功，根据VLM返回的状态更新任务状态
+                TaskStatus vlmMappedStatus = VLMStatusMapper.mapVLMStatusToTaskStatus(response.getCurrentStatus());
+                
+                if (vlmMappedStatus != null) {
+                    task.setStatus(vlmMappedStatus);
+                    log.info("根据VLM响应更新任务状态，任务ID: {}, VLM状态: {} -> WVP状态: {}", 
+                            taskId, response.getCurrentStatus(), vlmMappedStatus.getDescription());
+                } else {
+                    // 如果无法映射VLM状态，使用预期的最终状态
+                    TaskStatus finalStatus = task.getFinalStatus(action);
+                    task.setStatus(finalStatus);
+                    log.warn("无法映射VLM状态 '{}', 使用预期状态: {}", 
+                            response.getCurrentStatus(), finalStatus.getDescription());
+                }
+                
                 task.updateLastStatusSync();
                 analysisTaskMapper.update(task);
                 
                 log.info("任务操作执行成功，任务ID: {}, 操作: {}, 最终状态: {}", 
-                        taskId, action.getDescription(), finalStatus);
+                        taskId, action.getDescription(), task.getStatus().getDescription());
             } else {
                 // 操作失败，更新为错误状态
                 String errorMsg = response != null ? response.getErrorInfo() : "VLM服务调用失败";
@@ -351,18 +366,29 @@ public class TaskStateServiceImpl implements ITaskStateService {
     }
 
     /**
-     * 调用VLM服务
+     * 调用VLM服务 - 使用新的统一接口
      */
     private VLMJobActionResponse callVlmService(String vlmJobId, TaskAction action, boolean forceRestart) throws ServiceException {
         switch (action) {
             case START:
-                return vlmClientService.startJob(vlmJobId, forceRestart);
+                JobStatusUpdateRequest startRequest = new JobStatusUpdateRequest("start", forceRestart);
+                return vlmClientService.updateJobStatus(vlmJobId, startRequest);
             case PAUSE:
-                return vlmClientService.pauseJob(vlmJobId);
+                JobStatusUpdateRequest pauseRequest = new JobStatusUpdateRequest("pause");
+                return vlmClientService.updateJobStatus(vlmJobId, pauseRequest);
             case RESUME:
-                return vlmClientService.resumeJob(vlmJobId);
+                JobStatusUpdateRequest resumeRequest = new JobStatusUpdateRequest("resume");
+                return vlmClientService.updateJobStatus(vlmJobId, resumeRequest);
             case STOP:
-                return vlmClientService.stopJob(vlmJobId);
+                // 停止操作使用新的cancelJob接口，需要适配响应
+                JobCancelResponse cancelResponse = vlmClientService.cancelJob(vlmJobId);
+                // 适配为统一的VLMJobActionResponse格式
+                VLMJobActionResponse actionResponse = new VLMJobActionResponse();
+                actionResponse.setJobId(cancelResponse.getJobId());
+                actionResponse.setMessage(cancelResponse.getMessage());
+                actionResponse.setCurrentStatus("cancelled");
+                actionResponse.setActionTimestamp(cancelResponse.getCancelledAt());
+                return actionResponse;
             default:
                 throw new ServiceException("不支持的任务操作: " + action);
         }

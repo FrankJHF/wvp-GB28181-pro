@@ -37,7 +37,10 @@ public enum TaskStatus {
     FAILED("failed", "失败"),
     
     @Schema(description = "错误")
-    ERROR("error", "错误");
+    ERROR("error", "错误"),
+    
+    @Schema(description = "已取消")
+    CANCELLED("cancelled", "已取消");
 
     private final String value;
     private final String description;
@@ -76,7 +79,7 @@ public enum TaskStatus {
      * @return true如果是终止状态
      */
     public boolean isTerminated() {
-        return this == STOPPED || this == FAILED || this == ERROR;
+        return this == STOPPED || this == FAILED || this == ERROR || this == CANCELLED;
     }
 
     /**

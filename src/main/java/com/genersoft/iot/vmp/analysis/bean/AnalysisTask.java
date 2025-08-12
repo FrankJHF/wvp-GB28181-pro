@@ -108,7 +108,8 @@ public class AnalysisTask {
         return status == TaskStatus.CREATED || 
                status == TaskStatus.STOPPED || 
                status == TaskStatus.FAILED || 
-               status == TaskStatus.ERROR;
+               status == TaskStatus.ERROR ||
+               status == TaskStatus.CANCELLED;
     }
 
     /**
@@ -147,7 +148,8 @@ public class AnalysisTask {
         return status == TaskStatus.CREATED || 
                status == TaskStatus.STOPPED || 
                status == TaskStatus.FAILED || 
-               status == TaskStatus.ERROR;
+               status == TaskStatus.ERROR ||
+               status == TaskStatus.CANCELLED;
     }
 
     /**

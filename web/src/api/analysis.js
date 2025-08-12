@@ -104,30 +104,35 @@ export function deleteTask(id) {
 
 export function startTask(id, forceRestart = false) {
   return request({
-    url: `/api/vmanager/analysis/tasks/${id}/start`,
-    method: 'post',
-    params: { forceRestart }
+    url: `/api/vmanager/analysis/tasks/${id}`,
+    method: 'patch',
+    data: { 
+      action: 'start',
+      forceRestart: forceRestart
+    }
   })
 }
 
 export function pauseTask(id) {
   return request({
-    url: `/api/vmanager/analysis/tasks/${id}/pause`,
-    method: 'post'
+    url: `/api/vmanager/analysis/tasks/${id}`,
+    method: 'patch',
+    data: { action: 'pause' }
   })
 }
 
 export function resumeTask(id) {
   return request({
-    url: `/api/vmanager/analysis/tasks/${id}/resume`,
-    method: 'post'
+    url: `/api/vmanager/analysis/tasks/${id}`,
+    method: 'patch',
+    data: { action: 'resume' }
   })
 }
 
-export function stopTask(id) {
+export function cancelTask(id) {
   return request({
-    url: `/api/vmanager/analysis/tasks/${id}/stop`,
-    method: 'post'
+    url: `/api/vmanager/analysis/tasks/${id}`,
+    method: 'delete'
   })
 }
 

@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -144,57 +145,77 @@ public class AnalysisTaskController {
     }
 
     /**
-     * 更新分析任务
+     * 更新任务状态（统一状态操作接口）
      */
-    @PutMapping("/{taskId}")
-    @Operation(summary = "更新分析任务", security = @SecurityRequirement(name = JwtUtils.HEADER))
-    public WVPResult<AnalysisTask> updateTask(
+    @PatchMapping("/{taskId}")
+    @Operation(summary = "更新任务状态", security = @SecurityRequirement(name = JwtUtils.HEADER))
+    public WVPResult<Void> updateTaskStatus(
             @Parameter(name = "taskId", description = "任务ID", required = true) 
             @PathVariable String taskId,
-            @RequestBody AnalysisTask task) {
+            @RequestBody Map<String, Object> actionRequest) {
         
         if ((taskId == null || taskId.trim().isEmpty())) {
             throw new ControllerException(ErrorCode.ERROR400.getCode(), "任务ID不能为空");
         }
         
+        String action = (String) actionRequest.get("action");
+        if (action == null || action.trim().isEmpty()) {
+            throw new ControllerException(ErrorCode.ERROR400.getCode(), "操作类型不能为空");
+        }
+        
         try {
-            // 检查任务是否存在
-            AnalysisTask existingTask = analysisTaskService.getTaskById(taskId);
-            if (existingTask == null) {
-                throw new ControllerException(ErrorCode.ERROR404.getCode(), "分析任务不存在");
-            }
-            
             // 检查权限
-            String currentUser = SecurityUtils.getUserInfo() != null ? SecurityUtils.getUserInfo().getUsername() : "unknown";
-            boolean isAdmin = SecurityUtils.getUserInfo() != null; // 简化为只检查是否已登录
+            checkTaskPermission(taskId);
             
-            if (!isAdmin && !currentUser.equals(existingTask.getCreatedBy())) {
-                throw new ControllerException(ErrorCode.ERROR403.getCode(), "无权限更新该任务");
+            CompletableFuture<Void> future;
+            String actionName;
+            
+            switch (action.toLowerCase()) {
+                case "start":
+                    Boolean forceRestart = (Boolean) actionRequest.getOrDefault("forceRestart", false);
+                    future = analysisTaskService.startTask(taskId, forceRestart);
+                    actionName = "启动";
+                    break;
+                case "pause":
+                    future = analysisTaskService.pauseTask(taskId);
+                    actionName = "暂停";
+                    break;
+                case "resume":
+                    future = analysisTaskService.resumeTask(taskId);
+                    actionName = "恢复";
+                    break;
+                default:
+                    throw new ControllerException(ErrorCode.ERROR400.getCode(), 
+                            "不支持的操作类型: " + action);
             }
             
-            // 设置ID
-            task.setId(taskId);
+            // 等待操作完成（最多等待10秒）
+            try {
+                future.get(10, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                log.warn("等待任务{}完成超时，任务ID: {}", actionName, taskId);
+                return WVPResult.success(null, "任务" + actionName + "中，请稍后检查状态");
+            }
             
-            AnalysisTask result = analysisTaskService.updateTask(task);
+            String currentUser = SecurityUtils.getUserInfo() != null ? SecurityUtils.getUserInfo().getUsername() : "unknown";
+            log.info("用户 {} {}了分析任务: {}", currentUser, actionName, taskId);
             
-            log.info("用户 {} 更新了分析任务: {}", currentUser, result.getTaskName());
-            
-            return WVPResult.success(result, "更新成功");
+            return WVPResult.success(null, "任务" + actionName + "成功");
         } catch (ControllerException e) {
             throw e;
         } catch (Exception e) {
-            log.error("更新分析任务失败，ID: {}", taskId, e);
+            log.error("操作分析任务失败，ID: {}, action: {}", taskId, action, e);
             throw new ControllerException(ErrorCode.ERROR500.getCode(), 
-                    "更新分析任务失败: " + e.getMessage());
+                    "操作分析任务失败: " + e.getMessage());
         }
     }
 
     /**
-     * 删除分析任务
+     * 删除分析任务（或取消运行中的任务）
      */
     @DeleteMapping("/{taskId}")
-    @Operation(summary = "删除分析任务", security = @SecurityRequirement(name = JwtUtils.HEADER))
-    public WVPResult<Void> deleteTask(
+    @Operation(summary = "删除分析任务或取消运行中的任务", security = @SecurityRequirement(name = JwtUtils.HEADER))
+    public WVPResult<Void> deleteOrCancelTask(
             @Parameter(name = "taskId", description = "任务ID", required = true) 
             @PathVariable String taskId) {
         
@@ -210,189 +231,45 @@ public class AnalysisTaskController {
             }
             
             // 检查权限
-            String currentUser = SecurityUtils.getUserInfo() != null ? SecurityUtils.getUserInfo().getUsername() : "unknown";
-            boolean isAdmin = SecurityUtils.getUserInfo() != null; // 简化为只检查是否已登录
-            
-            if (!isAdmin && !currentUser.equals(existingTask.getCreatedBy())) {
-                throw new ControllerException(ErrorCode.ERROR403.getCode(), "无权限删除该任务");
-            }
-            
-            boolean success = analysisTaskService.deleteTask(taskId);
-            if (!success) {
-                throw new ControllerException(ErrorCode.ERROR500.getCode(), "删除分析任务失败");
-            }
-            
-            log.info("用户 {} 删除了分析任务: {}", currentUser, existingTask.getTaskName());
-            
-            return WVPResult.success(null, "删除成功");
-        } catch (ControllerException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("删除分析任务失败，ID: {}", taskId, e);
-            throw new ControllerException(ErrorCode.ERROR500.getCode(), 
-                    "删除分析任务失败: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 启动任务
-     */
-    @PostMapping("/{taskId}/start")
-    @Operation(summary = "启动分析任务", security = @SecurityRequirement(name = JwtUtils.HEADER))
-    public WVPResult<Void> startTask(
-            @Parameter(name = "taskId", description = "任务ID", required = true) 
-            @PathVariable String taskId,
-            @Parameter(name = "forceRestart", description = "是否强制重启，默认false") 
-            @RequestParam(defaultValue = "false") boolean forceRestart) {
-        
-        if ((taskId == null || taskId.trim().isEmpty())) {
-            throw new ControllerException(ErrorCode.ERROR400.getCode(), "任务ID不能为空");
-        }
-        
-        try {
-            // 检查权限
             checkTaskPermission(taskId);
             
-            CompletableFuture<Void> future = analysisTaskService.startTask(taskId, forceRestart);
+            String currentUser = SecurityUtils.getUserInfo() != null ? SecurityUtils.getUserInfo().getUsername() : "unknown";
             
-            // 等待任务启动完成（最多等待10秒）
-            try {
-                future.get(10, TimeUnit.SECONDS);
-            } catch (Exception e) {
-                log.warn("等待任务启动完成超时，任务ID: {}", taskId);
-                return WVPResult.success(null, "任务启动中，请稍后检查状态");
+            // 判断任务状态，决定是删除还是取消
+            TaskStatus currentStatus = TaskStatus.fromValue(existingTask.getStatus().getValue());
+            
+            if (currentStatus.isActive() || currentStatus == TaskStatus.PAUSED) {
+                // 活跃状态或暂停状态的任务：取消（使用停止实现）
+                CompletableFuture<Void> future = analysisTaskService.stopTask(taskId);
+                
+                // 等待取消操作完成
+                try {
+                    future.get(10, TimeUnit.SECONDS);
+                } catch (Exception e) {
+                    log.warn("等待任务取消完成超时，任务ID: {}", taskId);
+                    return WVPResult.success(null, "任务取消中，请稍后检查状态");
+                }
+                
+                log.info("用户 {} 取消了分析任务: {}", currentUser, existingTask.getTaskName());
+                return WVPResult.success(null, "任务取消成功");
+                
+            } else {
+                // 非活跃状态的任务：删除
+                boolean success = analysisTaskService.deleteTask(taskId);
+                if (!success) {
+                    throw new ControllerException(ErrorCode.ERROR500.getCode(), "删除分析任务失败");
+                }
+                
+                log.info("用户 {} 删除了分析任务: {}", currentUser, existingTask.getTaskName());
+                return WVPResult.success(null, "删除成功");
             }
             
-            String currentUser = SecurityUtils.getUserInfo() != null ? SecurityUtils.getUserInfo().getUsername() : "unknown";
-            log.info("用户 {} 启动了分析任务: {}", currentUser, taskId);
-            
-            return WVPResult.success(null, "任务启动成功");
         } catch (ControllerException e) {
             throw e;
         } catch (Exception e) {
-            log.error("启动分析任务失败，ID: {}", taskId, e);
+            log.error("删除或取消分析任务失败，ID: {}", taskId, e);
             throw new ControllerException(ErrorCode.ERROR500.getCode(), 
-                    "启动分析任务失败: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 暂停任务
-     */
-    @PostMapping("/{taskId}/pause")
-    @Operation(summary = "暂停分析任务", security = @SecurityRequirement(name = JwtUtils.HEADER))
-    public WVPResult<Void> pauseTask(
-            @Parameter(name = "taskId", description = "任务ID", required = true) 
-            @PathVariable String taskId) {
-        
-        if ((taskId == null || taskId.trim().isEmpty())) {
-            throw new ControllerException(ErrorCode.ERROR400.getCode(), "任务ID不能为空");
-        }
-        
-        try {
-            // 检查权限
-            checkTaskPermission(taskId);
-            
-            CompletableFuture<Void> future = analysisTaskService.pauseTask(taskId);
-            
-            // 等待任务暂停完成（最多等待5秒）
-            try {
-                future.get(5, TimeUnit.SECONDS);
-            } catch (Exception e) {
-                log.warn("等待任务暂停完成超时，任务ID: {}", taskId);
-                return WVPResult.success(null, "任务暂停中，请稍后检查状态");
-            }
-            
-            String currentUser = SecurityUtils.getUserInfo() != null ? SecurityUtils.getUserInfo().getUsername() : "unknown";
-            log.info("用户 {} 暂停了分析任务: {}", currentUser, taskId);
-            
-            return WVPResult.success(null, "任务暂停成功");
-        } catch (ControllerException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("暂停分析任务失败，ID: {}", taskId, e);
-            throw new ControllerException(ErrorCode.ERROR500.getCode(), 
-                    "暂停分析任务失败: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 恢复任务
-     */
-    @PostMapping("/{taskId}/resume")
-    @Operation(summary = "恢复分析任务", security = @SecurityRequirement(name = JwtUtils.HEADER))
-    public WVPResult<Void> resumeTask(
-            @Parameter(name = "taskId", description = "任务ID", required = true) 
-            @PathVariable String taskId) {
-        
-        if ((taskId == null || taskId.trim().isEmpty())) {
-            throw new ControllerException(ErrorCode.ERROR400.getCode(), "任务ID不能为空");
-        }
-        
-        try {
-            // 检查权限
-            checkTaskPermission(taskId);
-            
-            CompletableFuture<Void> future = analysisTaskService.resumeTask(taskId);
-            
-            // 等待任务恢复完成（最多等待5秒）
-            try {
-                future.get(5, TimeUnit.SECONDS);
-            } catch (Exception e) {
-                log.warn("等待任务恢复完成超时，任务ID: {}", taskId);
-                return WVPResult.success(null, "任务恢复中，请稍后检查状态");
-            }
-            
-            String currentUser = SecurityUtils.getUserInfo() != null ? SecurityUtils.getUserInfo().getUsername() : "unknown";
-            log.info("用户 {} 恢复了分析任务: {}", currentUser, taskId);
-            
-            return WVPResult.success(null, "任务恢复成功");
-        } catch (ControllerException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("恢复分析任务失败，ID: {}", taskId, e);
-            throw new ControllerException(ErrorCode.ERROR500.getCode(), 
-                    "恢复分析任务失败: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 停止任务
-     */
-    @PostMapping("/{taskId}/stop")
-    @Operation(summary = "停止分析任务", security = @SecurityRequirement(name = JwtUtils.HEADER))
-    public WVPResult<Void> stopTask(
-            @Parameter(name = "taskId", description = "任务ID", required = true) 
-            @PathVariable String taskId) {
-        
-        if ((taskId == null || taskId.trim().isEmpty())) {
-            throw new ControllerException(ErrorCode.ERROR400.getCode(), "任务ID不能为空");
-        }
-        
-        try {
-            // 检查权限
-            checkTaskPermission(taskId);
-            
-            CompletableFuture<Void> future = analysisTaskService.stopTask(taskId);
-            
-            // 等待任务停止完成（最多等待10秒）
-            try {
-                future.get(10, TimeUnit.SECONDS);
-            } catch (Exception e) {
-                log.warn("等待任务停止完成超时，任务ID: {}", taskId);
-                return WVPResult.success(null, "任务停止中，请稍后检查状态");
-            }
-            
-            String currentUser = SecurityUtils.getUserInfo() != null ? SecurityUtils.getUserInfo().getUsername() : "unknown";
-            log.info("用户 {} 停止了分析任务: {}", currentUser, taskId);
-            
-            return WVPResult.success(null, "任务停止成功");
-        } catch (ControllerException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("停止分析任务失败，ID: {}", taskId, e);
-            throw new ControllerException(ErrorCode.ERROR500.getCode(), 
-                    "停止分析任务失败: " + e.getMessage());
+                    "操作分析任务失败: " + e.getMessage());
         }
     }
 

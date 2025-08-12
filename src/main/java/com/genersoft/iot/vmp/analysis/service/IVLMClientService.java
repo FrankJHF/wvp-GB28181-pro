@@ -3,6 +3,9 @@ package com.genersoft.iot.vmp.analysis.service;
 import com.genersoft.iot.vmp.analysis.bean.dto.VLMJobRequest;
 import com.genersoft.iot.vmp.analysis.bean.dto.VLMJobResponse;
 import com.genersoft.iot.vmp.analysis.bean.dto.VLMJobActionResponse;
+import com.genersoft.iot.vmp.analysis.bean.dto.JobStatusUpdateRequest;
+import com.genersoft.iot.vmp.analysis.bean.dto.JobStatusResponse;
+import com.genersoft.iot.vmp.analysis.bean.dto.JobCancelResponse;
 import com.genersoft.iot.vmp.conf.exception.ServiceException;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -22,45 +25,29 @@ public interface IVLMClientService {
     VLMJobResponse createJob(VLMJobRequest request, boolean autoStart) throws ServiceException;
 
     /**
-     * 启动VLM作业
+     * 统一的作业状态更新接口
      * @param jobId 作业ID
-     * @param forceRestart 是否强制重启
+     * @param statusRequest 状态更新请求
      * @return 作业操作响应
      */
-    @Schema(description = "启动VLM作业")
-    VLMJobActionResponse startJob(String jobId, boolean forceRestart) throws ServiceException;
+    @Schema(description = "统一的作业状态更新接口")
+    VLMJobActionResponse updateJobStatus(String jobId, JobStatusUpdateRequest statusRequest) throws ServiceException;
 
     /**
-     * 暂停VLM作业
+     * 取消VLM作业
      * @param jobId 作业ID
-     * @return 作业操作响应
+     * @return 作业取消响应
      */
-    @Schema(description = "暂停VLM作业")
-    VLMJobActionResponse pauseJob(String jobId) throws ServiceException;
+    @Schema(description = "取消VLM作业")
+    JobCancelResponse cancelJob(String jobId) throws ServiceException;
 
     /**
-     * 恢复VLM作业
+     * 查询VLM作业详细状态
      * @param jobId 作业ID
-     * @return 作业操作响应
+     * @return VLM作业状态响应
      */
-    @Schema(description = "恢复VLM作业")
-    VLMJobActionResponse resumeJob(String jobId) throws ServiceException;
-
-    /**
-     * 停止VLM作业
-     * @param jobId 作业ID
-     * @return 作业操作响应
-     */
-    @Schema(description = "停止VLM作业")
-    VLMJobActionResponse stopJob(String jobId) throws ServiceException;
-
-    /**
-     * 查询VLM作业状态
-     * @param jobId 作业ID
-     * @return VLM作业响应
-     */
-    @Schema(description = "查询VLM作业状态")
-    VLMJobResponse getJobStatus(String jobId) throws ServiceException;
+    @Schema(description = "查询VLM作业详细状态")
+    JobStatusResponse getJobStatus(String jobId) throws ServiceException;
 
     /**
      * 检查VLM微服务健康状态

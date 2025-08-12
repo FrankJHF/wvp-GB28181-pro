@@ -17,10 +17,9 @@ public interface AnalysisCardMapper {
     /**
      * 新增分析卡片
      */
-    @Insert("INSERT INTO wvp_analysis_card (id, title, description, icon, tags, enabled, prompt, model_type, analysis_config, created_by, created_at, updated_at) " +
+    @Insert("INSERT INTO wvp_analysis_card (id, title, description, icon, tags, enabled, prompt, model_type, created_by, created_at, updated_at) " +
             "VALUES (#{id}, #{title}, #{description}, #{icon}, #{tags,typeHandler=com.genersoft.iot.vmp.utils.JsonTypeHandler}, " +
-            "#{enabled}, #{prompt}, #{modelType}, #{analysisConfig,typeHandler=com.genersoft.iot.vmp.utils.JsonTypeHandler}, " +
-            "#{createdBy}, #{createdAt}, #{updatedAt})")
+            "#{enabled}, #{prompt}, #{modelType}, #{createdBy}, #{createdAt}, #{updatedAt})")
     int insert(AnalysisCard card);
 
     /**
@@ -36,7 +35,6 @@ public interface AnalysisCardMapper {
             "<if test=\"enabled != null\">, enabled = #{enabled}</if>" +
             "<if test=\"prompt != null\">, prompt = #{prompt}</if>" +
             "<if test=\"modelType != null\">, model_type = #{modelType}</if>" +
-            "<if test=\"analysisConfig != null\">, analysis_config = #{analysisConfig,typeHandler=com.genersoft.iot.vmp.utils.JsonTypeHandler}</if>" +
             "WHERE id = #{id}" +
             " </script>"})
     int update(AnalysisCard card);

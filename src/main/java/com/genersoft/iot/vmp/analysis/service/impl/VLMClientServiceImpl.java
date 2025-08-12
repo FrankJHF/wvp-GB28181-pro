@@ -5,6 +5,9 @@ import com.genersoft.iot.vmp.analysis.service.IVLMClientService.VLMHealthRespons
 import com.genersoft.iot.vmp.analysis.bean.dto.VLMJobRequest;
 import com.genersoft.iot.vmp.analysis.bean.dto.VLMJobResponse;
 import com.genersoft.iot.vmp.analysis.bean.dto.VLMJobActionResponse;
+import com.genersoft.iot.vmp.analysis.bean.dto.JobStatusUpdateRequest;
+import com.genersoft.iot.vmp.analysis.bean.dto.JobStatusResponse;
+import com.genersoft.iot.vmp.analysis.bean.dto.JobCancelResponse;
 import com.genersoft.iot.vmp.conf.exception.ServiceException;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -82,110 +85,42 @@ public class VLMClientServiceImpl implements IVLMClientService {
 
     @Override
     @Retryable(value = {RestClientException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public VLMJobActionResponse startJob(String jobId, boolean forceRestart) throws ServiceException {
-        log.info("启动VLM作业，作业ID: {}, 强制重启: {}", jobId, forceRestart);
+    public VLMJobActionResponse updateJobStatus(String jobId, JobStatusUpdateRequest statusRequest) throws ServiceException {
+        log.info("更新VLM作业状态，作业ID: {}, 操作: {}", jobId, statusRequest.getAction());
         
         try {
-            String url = vlmBaseUrl + JOBS_ENDPOINT + "/" + jobId + "/start";
-            if (forceRestart) {
-                url += "?force_restart=true";
-            }
+            String url = vlmBaseUrl + JOBS_ENDPOINT + "/" + jobId;
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             
-            HttpEntity<String> entity = new HttpEntity<>(headers);
+            HttpEntity<JobStatusUpdateRequest> entity = new HttpEntity<>(statusRequest, headers);
             
             ResponseEntity<VLMJobActionResponse> response = restTemplate.exchange(
-                url, HttpMethod.POST, entity, VLMJobActionResponse.class);
+                url, HttpMethod.PATCH, entity, VLMJobActionResponse.class);
             
             VLMJobActionResponse result = response.getBody();
             
             if (result != null && result.isSuccess()) {
-                log.info("VLM作业启动成功，作业ID: {}, 当前状态: {}", jobId, result.getCurrentStatus());
+                log.info("VLM作业状态更新成功，作业ID: {}, 前状态: {}, 后状态: {}", 
+                        jobId, result.getPreviousStatus(), result.getCurrentStatus());
             } else {
-                log.error("VLM作业启动失败，作业ID: {}, 错误: {}", jobId, 
+                log.error("VLM作业状态更新失败，作业ID: {}, 错误: {}", jobId, 
                         result != null ? result.getErrorInfo() : "未知错误");
             }
             
             return result;
             
         } catch (RestClientException e) {
-            log.error("调用VLM服务启动作业失败，作业ID: {}", jobId, e);
-            throw new ServiceException("VLM服务启动作业失败: " + e.getMessage());
+            log.error("调用VLM服务更新作业状态失败，作业ID: {}", jobId, e);
+            throw new ServiceException("VLM服务更新作业状态失败: " + e.getMessage());
         }
     }
 
     @Override
     @Retryable(value = {RestClientException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public VLMJobActionResponse pauseJob(String jobId) throws ServiceException {
-        log.info("暂停VLM作业，作业ID: {}", jobId);
-        
-        try {
-            String url = vlmBaseUrl + JOBS_ENDPOINT + "/" + jobId + "/pause";
-            
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-            
-            ResponseEntity<VLMJobActionResponse> response = restTemplate.exchange(
-                url, HttpMethod.POST, entity, VLMJobActionResponse.class);
-            
-            VLMJobActionResponse result = response.getBody();
-            
-            if (result != null && result.isSuccess()) {
-                log.info("VLM作业暂停成功，作业ID: {}, 当前状态: {}", jobId, result.getCurrentStatus());
-            } else {
-                log.error("VLM作业暂停失败，作业ID: {}, 错误: {}", jobId, 
-                        result != null ? result.getErrorInfo() : "未知错误");
-            }
-            
-            return result;
-            
-        } catch (RestClientException e) {
-            log.error("调用VLM服务暂停作业失败，作业ID: {}", jobId, e);
-            throw new ServiceException("VLM服务暂停作业失败: " + e.getMessage());
-        }
-    }
-
-    @Override
-    @Retryable(value = {RestClientException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public VLMJobActionResponse resumeJob(String jobId) throws ServiceException {
-        log.info("恢复VLM作业，作业ID: {}", jobId);
-        
-        try {
-            String url = vlmBaseUrl + JOBS_ENDPOINT + "/" + jobId + "/resume";
-            
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-            
-            ResponseEntity<VLMJobActionResponse> response = restTemplate.exchange(
-                url, HttpMethod.POST, entity, VLMJobActionResponse.class);
-            
-            VLMJobActionResponse result = response.getBody();
-            
-            if (result != null && result.isSuccess()) {
-                log.info("VLM作业恢复成功，作业ID: {}, 当前状态: {}", jobId, result.getCurrentStatus());
-            } else {
-                log.error("VLM作业恢复失败，作业ID: {}, 错误: {}", jobId, 
-                        result != null ? result.getErrorInfo() : "未知错误");
-            }
-            
-            return result;
-            
-        } catch (RestClientException e) {
-            log.error("调用VLM服务恢复作业失败，作业ID: {}", jobId, e);
-            throw new ServiceException("VLM服务恢复作业失败: " + e.getMessage());
-        }
-    }
-
-    @Override
-    @Retryable(value = {RestClientException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public VLMJobActionResponse stopJob(String jobId) throws ServiceException {
-        log.info("停止VLM作业，作业ID: {}", jobId);
+    public JobCancelResponse cancelJob(String jobId) throws ServiceException {
+        log.info("取消VLM作业，作业ID: {}", jobId);
         
         try {
             String url = vlmBaseUrl + JOBS_ENDPOINT + "/" + jobId;
@@ -195,29 +130,29 @@ public class VLMClientServiceImpl implements IVLMClientService {
             
             HttpEntity<String> entity = new HttpEntity<>(headers);
             
-            ResponseEntity<VLMJobActionResponse> response = restTemplate.exchange(
-                url, HttpMethod.DELETE, entity, VLMJobActionResponse.class);
+            ResponseEntity<JobCancelResponse> response = restTemplate.exchange(
+                url, HttpMethod.DELETE, entity, JobCancelResponse.class);
             
-            VLMJobActionResponse result = response.getBody();
+            JobCancelResponse result = response.getBody();
             
             if (result != null && result.isSuccess()) {
-                log.info("VLM作业停止成功，作业ID: {}, 当前状态: {}", jobId, result.getCurrentStatus());
+                log.info("VLM作业取消成功，作业ID: {}", jobId);
             } else {
-                log.error("VLM作业停止失败，作业ID: {}, 错误: {}", jobId, 
-                        result != null ? result.getErrorInfo() : "未知错误");
+                log.error("VLM作业取消失败，作业ID: {}, 错误: {}", jobId, 
+                        result != null ? result.getMessage() : "未知错误");
             }
             
             return result;
             
         } catch (RestClientException e) {
-            log.error("调用VLM服务停止作业失败，作业ID: {}", jobId, e);
-            throw new ServiceException("VLM服务停止作业失败: " + e.getMessage());
+            log.error("调用VLM服务取消作业失败，作业ID: {}", jobId, e);
+            throw new ServiceException("VLM服务取消作业失败: " + e.getMessage());
         }
     }
 
     @Override
-    public VLMJobResponse getJobStatus(String jobId) throws ServiceException {
-        log.debug("查询VLM作业状态，作业ID: {}", jobId);
+    public JobStatusResponse getJobStatus(String jobId) throws ServiceException {
+        log.debug("查询VLM作业详细状态，作业ID: {}", jobId);
         
         try {
             String url = vlmBaseUrl + JOBS_ENDPOINT + "/" + jobId;
@@ -227,20 +162,20 @@ public class VLMClientServiceImpl implements IVLMClientService {
             
             HttpEntity<String> entity = new HttpEntity<>(headers);
             
-            ResponseEntity<VLMJobResponse> response = restTemplate.exchange(
-                url, HttpMethod.GET, entity, VLMJobResponse.class);
+            ResponseEntity<JobStatusResponse> response = restTemplate.exchange(
+                url, HttpMethod.GET, entity, JobStatusResponse.class);
             
-            VLMJobResponse result = response.getBody();
+            JobStatusResponse result = response.getBody();
             
             if (result != null) {
-                log.debug("VLM作业状态查询成功，作业ID: {}, 状态: {}", jobId, result.getStatus());
+                log.debug("VLM作业详细状态查询成功，作业ID: {}, 状态: {}", jobId, result.getStatus());
             }
             
             return result;
             
         } catch (RestClientException e) {
-            log.error("调用VLM服务查询作业状态失败，作业ID: {}", jobId, e);
-            throw new ServiceException("VLM服务查询作业状态失败: " + e.getMessage());
+            log.error("调用VLM服务查询作业详细状态失败，作业ID: {}", jobId, e);
+            throw new ServiceException("VLM服务查询作业详细状态失败: " + e.getMessage());
         }
     }
 

@@ -196,10 +196,11 @@ public class VLMCallbackProcessor {
     private void processVideoWindowInfo(AnalysisAlarm alarm, VLMAnalysisResult callback) {
         if (callback.getVideoWindow() != null) {
             VideoWindowInfo windowInfo = new VideoWindowInfo();
-            windowInfo.setWindowStartPts(callback.getVideoWindow().getWindowStartPts());
-            windowInfo.setWindowEndPts(callback.getVideoWindow().getWindowEndPts());
-            windowInfo.setWindowStartUtc(callback.getVideoWindow().getWindowStartUtc());
-            windowInfo.setWindowEndUtc(callback.getVideoWindow().getWindowEndUtc());
+            // 新API结构使用stream_start_pts和stream_end_pts
+            windowInfo.setWindowStartPts(callback.getVideoWindow().getStreamStartPts());
+            windowInfo.setWindowEndPts(callback.getVideoWindow().getStreamEndPts());
+            windowInfo.setWindowStartUtc(callback.getVideoWindow().getStreamStartUtc());
+            windowInfo.setWindowEndUtc(callback.getVideoWindow().getStreamEndUtc());
             
             // 计算窗口持续时长
             if (windowInfo.getWindowStartPts() != null && windowInfo.getWindowEndPts() != null) {

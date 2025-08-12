@@ -2,6 +2,7 @@ package com.genersoft.iot.vmp.analysis.service.impl;
 
 import com.genersoft.iot.vmp.analysis.bean.AnalysisCard;
 import com.genersoft.iot.vmp.analysis.bean.AnalysisTask;
+import com.genersoft.iot.vmp.analysis.bean.VLMStatusMapper;
 import com.genersoft.iot.vmp.analysis.bean.TaskStatus;
 import com.genersoft.iot.vmp.analysis.bean.dto.VLMJobRequest;
 import com.genersoft.iot.vmp.analysis.bean.dto.VLMJobResponse;
@@ -128,6 +129,16 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
         task.setVlmJobId(vlmResponse.getJobId());
 
+        // 根据VLM服务返回的状态更新任务状态
+        TaskStatus finalStatus = VLMStatusMapper.mapVLMStatusToTaskStatus(vlmResponse.getStatus());
+        if (finalStatus != null) {
+            task.setStatus(finalStatus);
+            log.info("根据VLM响应更新任务状态: {} -> {}", vlmResponse.getStatus(), finalStatus.getDescription());
+        } else {
+            // 如果无法映射VLM状态，保持CREATED状态
+            log.warn("无法映射VLM状态 '{}'，保持CREATED状态", vlmResponse.getStatus());
+        }
+
         // 保存任务
         int result = analysisTaskMapper.insert(task);
         if (result <= 0) {
@@ -186,12 +197,12 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
             throw new ServiceException("任务状态不允许删除，请先停止任务");
         }
 
-        // 停止VLM作业（如果存在）
+        // 取消VLM作业（如果存在）
         if (!(task.getVlmJobId() == null || task.getVlmJobId().trim().isEmpty())) {
             try {
-                vlmClientService.stopJob(task.getVlmJobId());
+                vlmClientService.cancelJob(task.getVlmJobId());
             } catch (Exception e) {
-                log.warn("停止VLM作业失败，继续删除任务，VLM作业ID: {}", task.getVlmJobId(), e);
+                log.warn("取消VLM作业失败，继续删除任务，VLM作业ID: {}", task.getVlmJobId(), e);
             }
         }
 

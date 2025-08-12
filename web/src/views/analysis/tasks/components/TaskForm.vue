@@ -310,8 +310,17 @@ export default {
               await updateTask(this.task.id, submitData)
               this.$message.success('更新成功!')
             } else {
-              await createTask(submitData)
+              const response = await createTask(submitData)
               this.$message.success('创建成功!')
+              
+              // 传递任务数据给父组件，包含autoStart状态
+              const taskData = {
+                id: response.data.id,
+                autoStart: this.taskForm.autoStart
+              }
+              this.$emit('success', taskData)
+              this.handleClose()
+              return // 早返回，避免重复执行后续代码
             }
             this.handleClose()
             this.$emit('success')

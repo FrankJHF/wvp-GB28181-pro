@@ -50,21 +50,21 @@ public class VLMAnalysisResult {
     @Schema(description = "视频窗口")
     public static class VideoWindow {
         
-        @Schema(description = "窗口开始PTS")
-        @JsonProperty("window_start_pts")
-        private Double windowStartPts;
+        @Schema(description = "流开始UTC时间")
+        @JsonProperty("stream_start_utc")
+        private String streamStartUtc;
 
-        @Schema(description = "窗口结束PTS")
-        @JsonProperty("window_end_pts")
-        private Double windowEndPts;
+        @Schema(description = "流结束UTC时间")
+        @JsonProperty("stream_end_utc")
+        private String streamEndUtc;
 
-        @Schema(description = "窗口开始UTC时间")
-        @JsonProperty("window_start_utc")
-        private String windowStartUtc;
+        @Schema(description = "流开始PTS")
+        @JsonProperty("stream_start_pts")
+        private Double streamStartPts;
 
-        @Schema(description = "窗口结束UTC时间")
-        @JsonProperty("window_end_utc")
-        private String windowEndUtc;
+        @Schema(description = "流结束PTS")
+        @JsonProperty("stream_end_pts")
+        private Double streamEndPts;
     }
 
     /**
