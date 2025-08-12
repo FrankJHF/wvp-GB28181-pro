@@ -39,14 +39,6 @@ public class TestDataFactory {
         List<String> tags = Arrays.asList("火灾检测", "紧急事件", "测试");
         card.setTags(tags);
         
-        // 设置分析配置
-        Map<String, Object> config = new HashMap<>();
-        config.put("inference_interval", 5);
-        config.put("sampling_fps", 5);
-        config.put("frame_buffer_size", 180);
-        config.put("max_new_tokens", 200);
-        card.setAnalysisConfig(config);
-        
         card.setCreatedBy("test-user");
         card.setCreatedAt(LocalDateTime.now());
         card.setUpdatedAt(LocalDateTime.now());
@@ -114,7 +106,7 @@ public class TestDataFactory {
         Map<String, Object> config = new HashMap<>();
         config.put("inference_interval", 5);
         config.put("sampling_fps", 5);
-        request.setAnalysisConfig(config);
+        request// .setAnalysisConfig(config);
         
         return request;
     }

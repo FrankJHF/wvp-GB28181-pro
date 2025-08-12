@@ -90,7 +90,7 @@ class AnalysisTaskServiceImplTest {
         Map<String, Object> config = new HashMap<>();
         config.put("inference_interval", 5);
         config.put("sampling_fps", 5);
-        testCard.setAnalysisConfig(config);
+        testCard// .setAnalysisConfig(config);
     }
 
     @Test

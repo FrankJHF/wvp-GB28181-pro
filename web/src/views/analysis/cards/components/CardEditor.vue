@@ -33,20 +33,11 @@
         />
       </el-form-item>
 
-      <el-form-item label="分析类型" prop="analysisType">
-        <el-select v-model="cardForm.analysisType" placeholder="请选择分析类型" style="width: 100%">
-          <el-option label="目标检测" value="detection" />
-          <el-option label="目标识别" value="recognition" />
-          <el-option label="目标跟踪" value="tracking" />
-          <el-option label="行为分析" value="analysis" />
-        </el-select>
-      </el-form-item>
-
       <el-form-item label="模型类型" prop="modelType">
         <el-select v-model="cardForm.modelType" placeholder="请选择模型类型" style="width: 100%">
-          <el-option label="YOLO" value="yolo" />
-          <el-option label="ResNet" value="resnet" />
-          <el-option label="MobileNet" value="mobilenet" />
+          <el-option label="SYSU-FireVED-v2" value="SYSU-FireVED-v2" />
+          <el-option label="GPT-4V" value="gpt-4v" />
+          <el-option label="Claude-3-Vision" value="claude-3-vision" />
           <el-option label="自定义" value="custom" />
         </el-select>
       </el-form-item>
@@ -107,18 +98,6 @@
         </div>
       </el-form-item>
 
-      <el-form-item label="分析配置">
-        <el-input
-          v-model="cardForm.analysisConfig"
-          type="textarea"
-          :rows="3"
-          placeholder="请输入JSON格式的分析配置参数"
-        />
-        <div class="form-tip">
-          JSON格式的配置参数，例如：{"confidence": 0.8, "max_objects": 10}
-        </div>
-      </el-form-item>
-
       <el-form-item label="启用状态">
         <el-switch
           v-model="cardForm.enabled"
@@ -164,12 +143,10 @@ export default {
       cardForm: {
         title: '',
         description: '',
-        analysisType: '',
         modelType: '',
         iconType: 'el-icon-video-play',
         tags: [],
         prompt: '',
-        analysisConfig: '',
         enabled: true
       },
       cardRules: {
@@ -179,9 +156,6 @@ export default {
         ],
         description: [
           { max: 200, message: '描述不能超过200个字符', trigger: 'blur' }
-        ],
-        analysisType: [
-          { required: true, message: '请选择分析类型', trigger: 'change' }
         ],
         modelType: [
           { required: true, message: '请选择模型类型', trigger: 'change' }
@@ -215,8 +189,7 @@ export default {
       if (this.isEdit && this.card) {
         this.cardForm = {
           ...this.card,
-          tags: this.card.tags ? [...this.card.tags] : [],
-          analysisConfig: this.card.analysisConfig || ''
+          tags: this.card.tags ? [...this.card.tags] : []
         }
       } else {
         this.resetForm()
@@ -226,12 +199,10 @@ export default {
       this.cardForm = {
         title: '',
         description: '',
-        analysisType: '',
         modelType: '',
         iconType: 'el-icon-video-play',
         tags: [],
         prompt: '',
-        analysisConfig: '',
         enabled: true
       }
       if (this.$refs.cardForm) {
@@ -260,17 +231,6 @@ export default {
         if (valid) {
           this.loading = true
           
-          // 验证JSON格式
-          if (this.cardForm.analysisConfig) {
-            try {
-              JSON.parse(this.cardForm.analysisConfig)
-            } catch (e) {
-              this.$message.error('分析配置不是有效的JSON格式')
-              this.loading = false
-              return
-            }
-          }
-
           const submitData = { ...this.cardForm }
           
           const submitPromise = this.isEdit 
@@ -307,6 +267,19 @@ export default {
   font-size: 12px;
   color: #909399;
   margin-top: 4px;
+}
+
+.json-example {
+  background-color: #f4f4f5;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+  font-size: 11px;
+  color: #606266;
+  display: inline-block;
+  margin-top: 4px;
+  word-break: break-all;
 }
 
 .dialog-footer {

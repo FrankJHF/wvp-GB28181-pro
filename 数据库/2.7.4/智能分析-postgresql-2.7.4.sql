@@ -10,8 +10,7 @@ CREATE TABLE IF NOT EXISTS wvp_analysis_card (
     tags JSONB,
     enabled BOOLEAN DEFAULT TRUE,
     prompt TEXT NOT NULL,
-    model_type VARCHAR(50) DEFAULT 'videollama3',
-    analysis_config JSONB,
+    model_type VARCHAR(50) DEFAULT 'SYSU-FireVED-v2',
     created_by VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -25,7 +24,6 @@ COMMENT ON COLUMN wvp_analysis_card.tags IS '标签数组';
 COMMENT ON COLUMN wvp_analysis_card.enabled IS '是否启用';
 COMMENT ON COLUMN wvp_analysis_card.prompt IS '分析提示词';
 COMMENT ON COLUMN wvp_analysis_card.model_type IS '模型类型';
-COMMENT ON COLUMN wvp_analysis_card.analysis_config IS 'VLM分析配置参数';
 COMMENT ON COLUMN wvp_analysis_card.created_by IS '创建人';
 COMMENT ON COLUMN wvp_analysis_card.created_at IS '创建时间';
 COMMENT ON COLUMN wvp_analysis_card.updated_at IS '更新时间';
@@ -151,15 +149,15 @@ CREATE INDEX idx_analysis_alarm_alarm_time ON wvp_analysis_alarm (alarm_time);
 CREATE INDEX idx_analysis_alarm_created_at ON wvp_analysis_alarm (created_at);
 
 -- 插入示例分析卡片数据
-INSERT INTO wvp_analysis_card (id, title, description, icon, tags, enabled, prompt, model_type, analysis_config, created_by) VALUES 
-('fire-detection', '火灾检测', '识别视频中的火焰和烟雾，及时发现火灾隐患', '/icons/fire.png', '["安全", "火灾", "预警"]'::jsonb, TRUE, 
-'请仔细分析这个视频片段，检测是否存在火焰、烟雾或其他火灾迹象。如果发现异常情况，请详细描述火灾的位置、严重程度和可能的危险性。', 
-'videollama3', '{"confidence_threshold": 0.8, "detection_interval": 2}'::jsonb, 'admin'),
+INSERT INTO wvp_analysis_card (id, title, description, icon, tags, enabled, prompt, model_type, created_by) VALUES 
+('fire-emergency-detection', '消防应急事件检测', '实时监测区域内是否存在消防应急事件，包括火焰、烟雾、爆炸等异常现象', '/icons/fire.png', '["智慧消防", "公共安全", "安全生产"]'::jsonb, TRUE,
+'<video>\n请你分析视频片段，判断其中是否发生了与火灾或其他突发情况相关的应急事件。请指出各事件其在视频片段中的时间范围，并简要描述事件内容。若存在多个不同的事件，请按时间顺序输出多个json单元；当视频中发生新的、有意义的、与火灾相关的事件，或当前事件状态发生显著变化时，请开始一个新的事件段。事件段可以重叠。\n每个事件输出要求如下（严格遵循 JSON 格式）：\n{''event_time'': ''起始秒-结束秒'',  // 时间范围，单位为秒，保留一位小数\n''event_des'': ''事件简要描述'' ,\n''emergency_exist'': ''是'' 或 ''否'' // 是否发生应急事件,必须根据事件描述内容来回答是或否}\n注意事项：时间是相对于该视频片段的局部时间（即片段起点为 0s）；所有事件的范围交集要求覆盖全时段。请仅输出符合上述格式的 JSON，无需额外解释说明。有连续时间的相同事件请合并输出，切忌零碎。',
+'SYSU-FireVED-v2', 'admin'),
 
-('person-intrusion', '人员入侵检测', '检测禁区内的人员入侵行为', '/icons/person.png', '["安全", "入侵", "监控"]'::jsonb, TRUE,
-'分析视频中是否有人员进入禁止区域。请关注人员的行为特征，如果发现有人员在不应该出现的区域活动，请详细描述入侵者的位置、数量和行为。',
-'videollama3', '{"confidence_threshold": 0.75, "detection_interval": 3}'::jsonb, 'admin'),
+('illegal-fire-detection', '违规用火检测', '实时监测火灾高风险区域内的违规用火行为，包括抽烟、纵火、违规动火作业等', '/icons/person.png', '["智慧消防", "安全生产"]'::jsonb, TRUE,
+'<video>\n请分析视频中是否存在违规用火行为，包括抽烟、纵火、违规动火作业等。请详细描述发现的违规行为的类型、位置和时间范围。',
+'SYSU-FireVED-v2', 'admin'),
 
-('vehicle-detection', '车辆违规检测', '检测违规停车、逆行等交通违法行为', '/icons/vehicle.png', '["交通", "违规", "监控"]'::jsonb, TRUE,
-'分析视频中的车辆行为，检测是否存在违规停车、逆行、超速或其他交通违法行为。如果发现违规行为，请描述车辆类型、违规类型和位置。',
-'videollama3', '{"confidence_threshold": 0.7, "detection_interval": 5}'::jsonb, 'admin');
+('fire-lane-occupation', '消防通道占用检测', '实时监测消防通道、安全出口区域的违规占用行为，包括杂物堆积、车辆违停等', '/icons/vehicle.png', '["智慧消防", "公共安全"]'::jsonb, TRUE,
+'<video>\n请分析视频中消防通道、安全出口区域是否存在违规占用行为，包括杂物堆积、车辆违停等。请详细描述占用物品的类型、位置和可能造成的安全隐患。',
+'SYSU-FireVED-v2', 'admin');

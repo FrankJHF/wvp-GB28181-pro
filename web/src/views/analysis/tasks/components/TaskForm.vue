@@ -2,7 +2,7 @@
   <el-dialog
     :title="isEdit ? '编辑分析任务' : '创建分析任务'"
     :visible.sync="dialogVisible"
-    width="700px"
+    width="600px"
     :close-on-click-modal="false"
     @close="handleClose"
   >
@@ -10,7 +10,7 @@
       ref="taskForm"
       :model="taskForm"
       :rules="taskRules"
-      label-width="120px"
+      label-width="100px"
       v-loading="loading"
     >
       <el-form-item label="任务名称" prop="taskName">
@@ -18,6 +18,17 @@
           v-model="taskForm.taskName"
           placeholder="请输入任务名称"
           maxlength="50"
+          show-word-limit
+        />
+      </el-form-item>
+
+      <el-form-item label="任务描述">
+        <el-input
+          v-model="taskForm.description"
+          type="textarea"
+          :rows="3"
+          placeholder="请输入任务描述"
+          maxlength="200"
           show-word-limit
         />
       </el-form-item>
@@ -41,13 +52,8 @@
             <span style="float: right; color: #8492a6; font-size: 12px">{{ card.modelType }}</span>
           </el-option>
         </el-select>
-        <div v-if="selectedCard" class="card-preview">
-          <div class="card-info">
-            <span class="info-label">描述:</span> {{ selectedCard.description || '无' }}
-          </div>
-          <div class="card-info">
-            <span class="info-label">类型:</span> {{ selectedCard.analysisType || '无' }}
-          </div>
+        <div v-if="selectedCard" class="form-tip">
+          描述: {{ selectedCard.description || '无' }} | 类型: {{ selectedCard.analysisType || '无' }}
         </div>
       </el-form-item>
 
@@ -57,44 +63,63 @@
           @change="handleChannelChange"
           ref="channelSelector"
         />
-        <div v-if="rtspUrl" class="rtsp-info">
-          <span class="info-label">RTSP地址:</span>
-          <el-input v-model="rtspUrl" readonly size="mini" />
+        <div v-if="rtspUrl" class="form-tip">
+          RTSP地址: {{ rtspUrl }}
         </div>
       </el-form-item>
 
-      <el-form-item label="任务描述">
-        <el-input
-          v-model="taskForm.description"
-          type="textarea"
-          :rows="3"
-          placeholder="请输入任务描述"
-          maxlength="200"
-          show-word-limit
+      <el-form-item label="推理间隔(秒)" prop="analysisConfig.inferenceInterval">
+        <el-input-number
+          v-model="taskForm.analysisConfig.inferenceInterval"
+          :min="1"
+          :max="300"
+          placeholder="30"
+          style="width: 100%"
         />
+        <div class="form-tip">VLM模型推理间隔时间</div>
       </el-form-item>
 
-      <el-form-item label="分析配置">
-        <el-input
-          v-model="taskForm.analysisConfig"
-          type="textarea"
-          :rows="4"
-          placeholder="请输入JSON格式的分析配置，留空则使用卡片默认配置"
+      <el-form-item label="帧缓冲大小" prop="analysisConfig.frameBufferSize">
+        <el-input-number
+          v-model="taskForm.analysisConfig.frameBufferSize"
+          :min="1"
+          :max="100"
+          placeholder="30"
+          style="width: 100%"
         />
-        <div class="form-tip">
-          JSON格式的配置参数，会覆盖卡片的默认配置。例如：{"confidence": 0.8, "interval": 1000}
-        </div>
+        <div class="form-tip">视频帧缓冲区大小</div>
+      </el-form-item>
+
+      <el-form-item label="采样帧率(fps)" prop="analysisConfig.samplingFps">
+        <el-input-number
+          v-model="taskForm.analysisConfig.samplingFps"
+          :min="0.1"
+          :max="30"
+          :step="0.1"
+          placeholder="1"
+          style="width: 100%"
+        />
+        <div class="form-tip">视频采样帧率</div>
+      </el-form-item>
+
+      <el-form-item label="最大输出长度" prop="analysisConfig.maxNewTokens">
+        <el-input-number
+          v-model="taskForm.analysisConfig.maxNewTokens"
+          :min="50"
+          :max="1000"
+          placeholder="200"
+          style="width: 100%"
+        />
+        <div class="form-tip">AI模型最大输出token数</div>
       </el-form-item>
 
       <el-form-item label="自动启动">
         <el-switch
           v-model="taskForm.autoStart"
-          active-text="是"
-          inactive-text="否"
+          active-text="启用"
+          inactive-text="禁用"
         />
-        <div class="form-tip">
-          创建任务后是否自动启动分析
-        </div>
+        <div class="form-tip">创建任务后是否自动启动分析</div>
       </el-form-item>
     </el-form>
 
@@ -141,7 +166,12 @@ export default {
         analysisCardId: null,
         deviceChannelId: null,
         description: '',
-        analysisConfig: '',
+        analysisConfig: {
+          inferenceInterval: 30,
+          frameBufferSize: 30,
+          samplingFps: 1,
+          maxNewTokens: 200
+        },
         autoStart: false
       },
       taskRules: {
@@ -192,7 +222,12 @@ export default {
       if (this.isEdit && this.task) {
         this.taskForm = {
           ...this.task,
-          analysisConfig: this.task.analysisConfig || '',
+          analysisConfig: {
+            inferenceInterval: (this.task.analysisConfig && this.task.analysisConfig.inference_interval) || 30,
+            frameBufferSize: (this.task.analysisConfig && this.task.analysisConfig.frame_buffer_size) || 30,
+            samplingFps: (this.task.analysisConfig && this.task.analysisConfig.sampling_fps) || 1,
+            maxNewTokens: (this.task.analysisConfig && this.task.analysisConfig.max_new_tokens) || 200
+          },
           autoStart: false
         }
         this.handleCardChange(this.taskForm.analysisCardId)
@@ -215,7 +250,12 @@ export default {
         analysisCardId: null,
         deviceChannelId: null,
         description: '',
-        analysisConfig: '',
+        analysisConfig: {
+          inferenceInterval: 30,
+          frameBufferSize: 30,
+          samplingFps: 1,
+          maxNewTokens: 200
+        },
         autoStart: false
       }
       this.rtspUrl = ''
@@ -226,13 +266,6 @@ export default {
     },
     handleCardChange(cardId) {
       this.selectedCard = this.availableCards.find(card => card.id === cardId)
-      if (this.selectedCard && this.selectedCard.analysisConfig) {
-        try {
-          this.taskForm.analysisConfig = JSON.stringify(JSON.parse(this.selectedCard.analysisConfig), null, 2)
-        } catch (e) {
-          this.taskForm.analysisConfig = this.selectedCard.analysisConfig
-        }
-      }
     },
     handleChannelChange(channelInfo) {
       // 通道变更时的处理逻辑，显示RTSP地址
@@ -246,16 +279,6 @@ export default {
       this.$refs.taskForm.validate(async (valid) => {
         if (valid) {
           this.loading = true
-          
-          try {
-            if (this.taskForm.analysisConfig) {
-              JSON.parse(this.taskForm.analysisConfig)
-            }
-          } catch (e) {
-            this.$message.error('分析配置不是有效的JSON格式')
-            this.loading = false
-            return
-          }
 
           const channelInfo = this.$refs.channelSelector.getSelectedChannelInfo()
           if (!channelInfo) {
@@ -268,14 +291,20 @@ export default {
             task_name: this.taskForm.taskName,
             analysis_card_id: this.taskForm.analysisCardId,
             description: this.taskForm.description,
-            analysis_config: this.taskForm.analysisConfig,
             device_id: channelInfo.deviceId,
             channel_id: channelInfo.channelId,
             device_name: channelInfo.deviceName,
             channel_name: channelInfo.channelName,
-            rtsp_url: channelInfo.rtspUrl
+            rtsp_url: channelInfo.rtspUrl,
+            auto_start: this.taskForm.autoStart,
+            analysis_config: {
+              inference_interval: this.taskForm.analysisConfig.inferenceInterval,
+              frame_buffer_size: this.taskForm.analysisConfig.frameBufferSize,
+              sampling_fps: this.taskForm.analysisConfig.samplingFps,
+              max_new_tokens: this.taskForm.analysisConfig.maxNewTokens
+            }
           }
-          
+
           try {
             if (this.isEdit) {
               await updateTask(this.task.id, submitData)
@@ -303,35 +332,23 @@ export default {
 </script>
 
 <style scoped>
-.card-preview {
-  margin-top: 8px;
-  padding: 8px;
-  background-color: #f5f7fa;
-  border-radius: 4px;
-  font-size: 12px;
-}
-
-.card-info {
-  margin-bottom: 4px;
-}
-
-.card-info:last-child {
-  margin-bottom: 0;
-}
-
-.info-label {
-  font-weight: 600;
-  color: #606266;
-}
-
-.rtsp-info {
-  margin-top: 8px;
-}
-
 .form-tip {
   font-size: 12px;
   color: #909399;
   margin-top: 4px;
+}
+
+.json-example {
+  background-color: #f4f4f5;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+  font-size: 11px;
+  color: #606266;
+  display: inline-block;
+  margin-top: 4px;
+  word-break: break-all;
 }
 
 .dialog-footer {

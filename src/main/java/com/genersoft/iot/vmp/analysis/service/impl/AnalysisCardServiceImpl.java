@@ -15,7 +15,6 @@ import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -267,7 +266,6 @@ public class AnalysisCardServiceImpl implements IAnalysisCardService {
         newCard.setEnabled(true); // 默认启用
         newCard.setPrompt(sourceCard.getPrompt());
         newCard.setModelType(sourceCard.getModelType());
-        newCard.setAnalysisConfig(sourceCard.getAnalysisConfig());
         newCard.setCreatedBy(createdBy);
         newCard.setCreatedAt(LocalDateTime.now());
         newCard.setUpdatedAt(LocalDateTime.now());

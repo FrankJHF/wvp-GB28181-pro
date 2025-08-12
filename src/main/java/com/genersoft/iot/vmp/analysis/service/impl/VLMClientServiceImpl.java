@@ -52,8 +52,8 @@ public class VLMClientServiceImpl implements IVLMClientService {
                 request.getDeviceId(), request.getChannelId(), autoStart);
         
         try {
-            request.setAutoStart(autoStart);
-            String url = vlmBaseUrl + JOBS_ENDPOINT;
+            // auto_start 作为 URL 参数传递
+            String url = vlmBaseUrl + JOBS_ENDPOINT + "?auto_start=" + autoStart;
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);

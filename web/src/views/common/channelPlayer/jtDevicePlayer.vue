@@ -371,7 +371,7 @@ export default {
       this.mediaServerId = "";
       this.app = "";
       this.videoUrl = ""
-      if (!!this.$refs[this.activePlayer]) {
+      if (this.$refs[this.activePlayer]) {
         this.$refs[this.activePlayer].pause();
       }
       switch (tab) {
@@ -427,7 +427,7 @@ export default {
         },
         close: function () {
             console.log('关闭视频');
-            if (!!this.$refs[this.activePlayer]){
+            if (this.$refs[this.activePlayer]){
               this.$refs[this.activePlayer].pause();
             }
             this.videoUrl = '';

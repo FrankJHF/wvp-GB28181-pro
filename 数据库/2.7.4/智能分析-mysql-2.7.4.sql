@@ -10,8 +10,7 @@ CREATE TABLE IF NOT EXISTS wvp_analysis_card (
     tags JSON COMMENT '标签数组',
     enabled BOOLEAN DEFAULT TRUE COMMENT '是否启用',
     prompt TEXT NOT NULL COMMENT '分析提示词',
-    model_type VARCHAR(50) DEFAULT 'videollama3' COMMENT '模型类型',
-    analysis_config JSON COMMENT 'VLM分析配置参数',
+    model_type VARCHAR(50) DEFAULT 'SYSU-FireVED-v2' COMMENT '模型类型',
     created_by VARCHAR(50) COMMENT '创建人',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -77,15 +76,15 @@ CREATE TABLE IF NOT EXISTS wvp_analysis_alarm (
 );
 
 -- 插入示例分析卡片数据
-INSERT INTO wvp_analysis_card (id, title, description, icon, tags, enabled, prompt, model_type, analysis_config, created_by) VALUES
+INSERT INTO wvp_analysis_card (id, title, description, icon, tags, enabled, prompt, model_type, created_by) VALUES
 ('fire-emergency-detection', '消防应急事件检测', '实时监测区域内是否存在消防应急事件，包括火焰、烟雾、爆炸等异常现象', '/icons/fire.png', '["智慧消防", "公共安全", "安全生产"]', TRUE,
-'实时监测视频区域的消防应急事件，包装抽烟、爆炸、火焰等异常现象。',
-'SYSU-FireVED-v2', '{"confidence_threshold": 0.8, "detection_interval": 2}', 'admin'),
+'<video>\n请你分析视频片段，判断其中是否发生了与火灾或其他突发情况相关的应急事件。请指出各事件其在视频片段中的时间范围，并简要描述事件内容。若存在多个不同的事件，请按时间顺序输出多个json单元；当视频中发生新的、有意义的、与火灾相关的事件，或当前事件状态发生显著变化时，请开始一个新的事件段。事件段可以重叠。\n每个事件输出要求如下（严格遵循 JSON 格式）：\n{\'event_time\': \'起始秒-结束秒\',  // 时间范围，单位为秒，保留一位小数\n\'event_des\': \'事件简要描述\' ,\n\'emergency_exist\': \'是\' 或 \'否\' // 是否发生应急事件,必须根据事件描述内容来回答是或否}\n注意事项：时间是相对于该视频片段的局部时间（即片段起点为 0s）；所有事件的范围交集要求覆盖全时段。请仅输出符合上述格式的 JSON，无需额外解释说明。有连续时间的相同事件请合并输出，切忌零碎。',
+'SYSU-FireVED-v2', 'admin'),
 
 ('illegal-fire-detection', '违规用火检测', '实时监测火灾高风险区域内的违规用火行为，包括抽烟、纵火、违规动火作业等', '/icons/person.png', '["智慧消防", "安全生产"]', TRUE,
-'实时监测区域的违规用火行为，包装抽烟、纵火、违规动火作业等。',
-'SYSU-FireVED-v2', '{"confidence_threshold": 0.75, "detection_interval": 3}', 'admin'),
+'<video>\n请分析视频中是否存在违规用火行为，包括抽烟、纵火、违规动火作业等。请详细描述发现的违规行为的类型、位置和时间范围。',
+'SYSU-FireVED-v2', 'admin'),
 
 ('fire-lane-occupation', '消防通道占用检测', '实时监测消防通道、安全出口区域的违规占用行为，包括杂物堆积、车辆违停等', '/icons/vehicle.png', '["智慧消防", "公共安全"]', TRUE,
-'实时监测消防通道、安全出口区域的违规占用行为，包括杂物堆积、车辆违停等。',
-'SYSU-FireVED-v2', '{"confidence_threshold": 0.7, "detection_interval": 5}', 'admin');
+'<video>\n请分析视频中消防通道、安全出口区域是否存在违规占用行为，包括杂物堆积、车辆违停等。请详细描述占用物品的类型、位置和可能造成的安全隐患。',
+'SYSU-FireVED-v2', 'admin');

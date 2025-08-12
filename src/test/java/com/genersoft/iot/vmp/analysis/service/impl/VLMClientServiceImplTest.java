@@ -69,7 +69,7 @@ class VLMClientServiceImplTest {
         Map<String, Object> config = new HashMap<>();
         config.put("inference_interval", 5);
         config.put("sampling_fps", 5);
-        jobRequest.setAnalysisConfig(config);
+        jobRequest// .setAnalysisConfig(config);
 
         // 创建作业响应
         jobResponse = new VLMJobResponse();

@@ -26,6 +26,9 @@ module.exports = {
     "vue/attributes-order": "off",
     "no-multiple-empty-lines": "warn",
 
+    // Enforce camelcase naming convention
+    "camelcase": ["error", { "properties": "always", "ignoreDestructuring": true }],
+
     // Style rules - make them warnings instead of errors
     quotes: ["warn", "single"],
     "comma-dangle": ["warn", "never"],

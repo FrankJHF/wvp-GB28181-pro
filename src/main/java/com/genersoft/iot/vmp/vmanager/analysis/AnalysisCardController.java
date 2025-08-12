@@ -284,7 +284,6 @@ public class AnalysisCardController {
             // 对所有用户隐藏敏感信息
             pageResult.getList().forEach(card -> {
                 card.setPrompt("");
-                card.setAnalysisConfig(null);
             });
             
             return WVPResult.success(pageResult, "查询成功");

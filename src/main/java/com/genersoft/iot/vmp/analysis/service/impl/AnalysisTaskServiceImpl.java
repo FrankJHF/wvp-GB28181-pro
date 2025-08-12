@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -117,7 +118,8 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
         // 创建VLM作业
         VLMJobRequest vlmRequest = createVLMJobRequest(task, card, rtspUrl);
-        VLMJobResponse vlmResponse = vlmClientService.createJob(vlmRequest, false); // 不自动启动
+        boolean autoStart = task.getAutoStart() != null ? task.getAutoStart() : false;
+        VLMJobResponse vlmResponse = vlmClientService.createJob(vlmRequest, autoStart);
 
         if (vlmResponse == null || !vlmResponse.isSuccess()) {
             throw new ServiceException("创建VLM作业失败: " +
@@ -406,8 +408,18 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
         request.setCallbackUrl(callbackBaseUrl + "/api/vlm/callback");
         request.setAnalysisPrompt(card.getPrompt());
         request.setModelName(card.getModelType());
-        request.setAnalysisConfig(card.getAnalysisConfig());
-        request.setAutoStart(false);
+        
+        // 使用任务的分析配置，如果没有配置则使用默认值
+        Map<String, Object> analysisConfig = task.getConfig();
+        if (analysisConfig == null || analysisConfig.isEmpty()) {
+            // 设置默认配置
+            analysisConfig = new java.util.HashMap<>();
+            analysisConfig.put("inference_interval", 30);
+            analysisConfig.put("frame_buffer_size", 30);
+            analysisConfig.put("sampling_fps", 1);
+            analysisConfig.put("max_new_tokens", 200);
+        }
+        request.setAnalysisConfig(analysisConfig);
 
         return request;
     }

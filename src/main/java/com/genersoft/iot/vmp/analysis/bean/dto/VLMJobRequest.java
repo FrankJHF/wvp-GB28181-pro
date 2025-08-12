@@ -45,8 +45,4 @@ public class VLMJobRequest {
     @Schema(description = "模型名称")
     @JsonProperty("model_name")
     private String modelName;
-
-    @Schema(description = "是否自动启动")
-    @JsonProperty("auto_start")
-    private Boolean autoStart = false;
 }

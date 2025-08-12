@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 智能分析卡片实体类
@@ -40,10 +39,6 @@ public class AnalysisCard {
     @Schema(description = "模型类型")
     @JsonProperty("model_type")
     private String modelType;
-
-    @Schema(description = "VLM分析配置参数")
-    @JsonProperty("analysis_config")
-    private Map<String, Object> analysisConfig;
 
     @Schema(description = "创建人")
     @JsonProperty("created_by")

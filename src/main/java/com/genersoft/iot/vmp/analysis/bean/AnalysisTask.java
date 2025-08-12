@@ -54,6 +54,7 @@ public class AnalysisTask {
     private String vlmJobId;
 
     @Schema(description = "任务配置参数")
+    @JsonProperty("analysis_config")
     private Map<String, Object> config;
 
     @Schema(description = "错误信息")
@@ -79,6 +80,11 @@ public class AnalysisTask {
     @Schema(description = "更新时间")
     @JsonProperty("updated_at")
     private LocalDateTime updatedAt;
+
+    // 非数据库字段 - 创建任务时是否自动启动
+    @Schema(description = "是否自动启动")
+    @JsonProperty("auto_start")
+    private transient Boolean autoStart = false;
 
     // 关联的分析卡片信息（非数据库字段）
     @Schema(description = "关联的分析卡片信息")

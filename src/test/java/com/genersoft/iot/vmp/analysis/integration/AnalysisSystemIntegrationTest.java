@@ -97,7 +97,7 @@ class AnalysisSystemIntegrationTest {
         config.put("sampling_fps", 5);
         config.put("frame_buffer_size", 180);
         config.put("max_new_tokens", 200);
-        testCard.setAnalysisConfig(config);
+        testCard// .setAnalysisConfig(config);
 
         // 创建测试任务
         testTask = new AnalysisTask();
