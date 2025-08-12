@@ -53,7 +53,7 @@
         </template>
       </el-table-column>
       <el-table-column label="创建时间" prop="created_at" min-width="120px" />
-      <el-table-column label="操作" align="center" min-width="200px" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" min-width="240px" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button type="primary" size="mini" @click="handleStart(row)" v-if="canStart(row)">
             启动
@@ -73,6 +73,8 @@
           <el-button type="danger" size="mini" @click="handleDelete(row)" v-if="canDelete(row)">
             删除
           </el-button>
+          <!-- 调试信息：显示当前任务状态 -->
+          <!-- <span style="font-size: 10px; color: #999; margin-left: 5px;">{{ row.status }}</span> -->
         </template>
       </el-table-column>
     </el-table>
@@ -138,16 +140,32 @@ export default {
   methods: {
     getList() {
       this.loading = true
-      getTasks(this.listQuery).then(response => {
+      // 构建查询参数，过滤掉空值
+      const query = {}
+      Object.keys(this.listQuery).forEach(key => {
+        const value = this.listQuery[key]
+        if (value !== null && value !== '' && value !== undefined) {
+          query[key] = value
+        }
+      })
+      
+      getTasks(query).then(response => {
         this.list = response.data.list || response.data
         this.total = response.data.total || (response.data.list ? response.data.list.length : 0)
         this.loading = false
-      }).catch(() => {
+      }).catch(error => {
+        console.error('获取任务列表失败:', error)
+        this.$message.error('获取任务列表失败')
         this.loading = false
       })
     },
     handleFilter() {
       this.listQuery.page = 1
+      // 处理状态为null的情况，避免后端查询异常
+      const query = { ...this.listQuery }
+      if (query.status === null || query.status === '') {
+        delete query.status
+      }
       this.getList()
     },
     handleCreate() {
@@ -176,16 +194,16 @@ export default {
       }).catch(() => {})
     },
     handleStart(row) {
-      this.executeTaskAction(startTask(row.id), '启动', row.taskName)
+      this.executeTaskAction(startTask(row.id), '启动')
     },
     handlePause(row) {
-      this.executeTaskAction(pauseTask(row.id), '暂停', row.taskName)
+      this.executeTaskAction(pauseTask(row.id), '暂停')
     },
     handleResume(row) {
-      this.executeTaskAction(resumeTask(row.id), '恢复', row.taskName)
+      this.executeTaskAction(resumeTask(row.id), '恢复')
     },
     handleStop(row) {
-      this.executeTaskAction(stopTask(row.id), '停止', row.taskName)
+      this.executeTaskAction(stopTask(row.id), '停止')
     },
     handleSyncStatus() {
       this.$confirm('确认同步所有任务状态？', '提示', {
@@ -202,7 +220,7 @@ export default {
         this.getList()
       }).catch(() => {})
     },
-    executeTaskAction(promise, action, taskName) {
+    executeTaskAction(promise, action) {
       const loading = this.$loading({
         lock: true,
         text: `${action}中...`,
@@ -227,38 +245,53 @@ export default {
     },
     getStatusType(status) {
       const map = {
+        CREATED: '',
         created: '',
+        RUNNING: 'success',
         running: 'success',
+        PAUSED: 'warning',
         paused: 'warning',
+        STOPPED: 'info',
         stopped: 'info',
+        ERROR: 'danger',
         error: 'danger'
       }
       return map[status] || ''
     },
     getStatusText(status) {
       const map = {
+        CREATED: '已创建',
         created: '已创建',
+        RUNNING: '运行中',
         running: '运行中',
+        PAUSED: '已暂停',
         paused: '已暂停', 
+        STOPPED: '已停止',
         stopped: '已停止',
+        ERROR: '错误',
         error: '错误'
       }
       return map[status] || status
     },
     canStart(row) {
-      return ['created', 'stopped', 'error'].includes(row.status)
+      const status = row.status ? row.status.toLowerCase() : ''
+      return ['created', 'stopped', 'error'].includes(status)
     },
     canPause(row) {
-      return row.status === 'running'
+      const status = row.status ? row.status.toLowerCase() : ''
+      return status === 'running'
     },
     canResume(row) {
-      return row.status === 'paused'
+      const status = row.status ? row.status.toLowerCase() : ''
+      return status === 'paused'
     },
     canStop(row) {
-      return ['running', 'paused'].includes(row.status)
+      const status = row.status ? row.status.toLowerCase() : ''
+      return ['running', 'paused'].includes(status)
     },
     canDelete(row) {
-      return ['created', 'stopped', 'error'].includes(row.status)
+      const status = row.status ? row.status.toLowerCase() : ''
+      return ['created', 'stopped', 'error'].includes(status)
     },
     handleCreationSuccess() {
       // 重置筛选条件，确保新建的任务能显示

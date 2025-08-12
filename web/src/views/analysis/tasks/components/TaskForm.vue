@@ -265,12 +265,15 @@ export default {
           }
 
           const submitData = {
-            ...this.taskForm,
-            deviceId: channelInfo.deviceId,
-            channelId: channelInfo.channelId,
-            deviceName: channelInfo.deviceName,
-            channelName: channelInfo.channelName,
-            rtspUrl: channelInfo.rtspUrl
+            task_name: this.taskForm.taskName,
+            analysis_card_id: this.taskForm.analysisCardId,
+            description: this.taskForm.description,
+            analysis_config: this.taskForm.analysisConfig,
+            device_id: channelInfo.deviceId,
+            channel_id: channelInfo.channelId,
+            device_name: channelInfo.deviceName,
+            channel_name: channelInfo.channelName,
+            rtsp_url: channelInfo.rtspUrl
           }
           
           try {
