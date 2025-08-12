@@ -19,15 +19,15 @@
     <div class="card-meta">
       <div class="meta-item">
         <span class="meta-label">模型:</span>
-        <span class="meta-value">{{ card.modelType || '--' }}</span>
+        <span class="meta-value">{{ card.model_type || '--' }}</span>
       </div>
       <div class="meta-item">
         <span class="meta-label">创建人:</span>
-        <span class="meta-value">{{ card.createdBy || '--' }}</span>
+        <span class="meta-value">{{ card.created_by || '--' }}</span>
       </div>
       <div class="meta-item">
         <span class="meta-label">创建时间:</span>
-        <span class="meta-value">{{ formatDate(card.createdAt) }}</span>
+        <span class="meta-value">{{ formatDate(card.created_at) }}</span>
       </div>
     </div>
 

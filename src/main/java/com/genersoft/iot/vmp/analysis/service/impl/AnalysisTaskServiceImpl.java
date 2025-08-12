@@ -80,8 +80,13 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
         }
 
         // 验证设备通道
-        if (!validateDeviceChannel(task.getDeviceId(), task.getChannelId())) {
-            throw new ServiceException("设备通道不存在或不可用");
+        Device device = deviceService.getDeviceByDeviceId(task.getDeviceId());
+        DeviceChannel channel = deviceChannelService.getOne(task.getDeviceId(), task.getChannelId());
+        if (device == null || channel == null) {
+            throw new ServiceException("设备或通道不存在");
+        }
+        if (!device.isOnLine() || !"ON".equals(channel.getStatus())) {
+            throw new ServiceException("设备或通道不可用");
         }
 
         // 获取分析卡片信息
@@ -99,10 +104,12 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
             throw new ServiceException("无法获取设备通道的RTSP流地址");
         }
 
-        // 生成ID和设置时间
+        // 填充任务信息
         if (task.getId() == null || task.getId().trim().isEmpty()) {
             task.setId(UUID.randomUUID().toString().replace("-", ""));
         }
+        task.setDeviceName(device.getName());
+        task.setChannelName(channel.getName());
         task.setRtspUrl(rtspUrl);
         task.setStatus(TaskStatus.CREATED);
         task.setCreatedAt(LocalDateTime.now());
@@ -233,6 +240,14 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
         PageHelper.startPage(pageNum, pageSize);
         List<AnalysisTask> tasks = analysisTaskMapper.selectAll(deviceId, channelId,
                 analysisCardId, status, createdBy, taskName);
+
+        // 填充关联信息
+        for (AnalysisTask task : tasks) {
+            if (task.getAnalysisCardId() != null) {
+                AnalysisCard card = analysisCardService.getCardById(task.getAnalysisCardId());
+                task.setAnalysisCard(card);
+            }
+        }
 
         return new PageInfo<>(tasks);
     }

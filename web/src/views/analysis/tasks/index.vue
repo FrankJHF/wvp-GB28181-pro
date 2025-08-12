@@ -15,11 +15,11 @@
         class="filter-item"
         style="width: 130px"
       >
-        <el-option label="已创建" value="created" />
-        <el-option label="运行中" value="running" />
-        <el-option label="已暂停" value="paused" />
-        <el-option label="已停止" value="stopped" />
-        <el-option label="错误" value="error" />
+        <el-option label="已创建" value="CREATED" />
+        <el-option label="运行中" value="RUNNING" />
+        <el-option label="已暂停" value="PAUSED" />
+        <el-option label="已停止" value="STOPPED" />
+        <el-option label="错误" value="ERROR" />
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
@@ -41,10 +41,10 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="任务名称" prop="taskName" min-width="150px" />
+      <el-table-column label="任务名称" prop="task_name" min-width="150px" />
       <el-table-column label="分析卡片" prop="analysisCard.title" min-width="120px" />
-      <el-table-column label="设备" prop="deviceName" min-width="120px" />
-      <el-table-column label="通道" prop="channelName" min-width="120px" />
+      <el-table-column label="设备" prop="device_name" min-width="120px" />
+      <el-table-column label="通道" prop="channel_name" min-width="120px" />
       <el-table-column label="状态" min-width="80px" align="center">
         <template slot-scope="{row}">
           <el-tag :type="getStatusType(row.status)">
@@ -52,7 +52,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" prop="createdAt" min-width="120px" />
+      <el-table-column label="创建时间" prop="created_at" min-width="120px" />
       <el-table-column label="操作" align="center" min-width="200px" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button type="primary" size="mini" @click="handleStart(row)" v-if="canStart(row)">
@@ -116,7 +116,7 @@ export default {
         page: 1,
         limit: 20,
         taskName: '',
-        status: '',
+        status: null,
         deviceId: '',
         channelId: '',
         analysisCardId: ''
@@ -266,7 +266,7 @@ export default {
         page: 1,
         limit: 20,
         taskName: '',
-        status: '',
+        status: null,
         deviceId: '',
         channelId: '',
         analysisCardId: this.defaultCardId || '' // 保留默认卡片ID的筛选

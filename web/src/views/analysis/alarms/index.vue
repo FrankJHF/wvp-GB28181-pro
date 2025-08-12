@@ -94,7 +94,7 @@ export default {
         deviceId: '',
         channelId: '',
         analysisType: '',
-        status: '',
+        status: null,
         taskId: ''
       },
       dateRange: [],

@@ -3,3 +3,9 @@ spring:
     name: wvp
   profiles:
     active: dev
+
+# MyBatis配置
+mybatis:
+  configuration:
+    # 开启下划线转驼峰命名映射
+    map-underscore-to-camel-case: true
