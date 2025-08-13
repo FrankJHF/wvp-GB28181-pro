@@ -33,7 +33,7 @@
             <h4 class="section-title">任务信息</h4>
             <div class="detail-item">
               <label>任务名称:</label>
-              <span>{{ alarm.taskName || '--' }}</span>
+              <span>{{ alarm.task_name || '--' }}</span>
             </div>
             <div class="detail-item">
               <label>分析类型:</label>
@@ -49,7 +49,7 @@
             <h4 class="section-title">设备信息</h4>
             <div class="detail-item">
               <label>设备名称:</label>
-              <span>{{ alarm.deviceName || alarm.deviceId || '--' }}</span>
+              <span>{{ alarm.device_name || alarm.deviceId || '--' }}</span>
             </div>
             <div class="detail-item">
               <label>设备ID:</label>
@@ -57,7 +57,7 @@
             </div>
             <div class="detail-item">
               <label>通道名称:</label>
-              <span>{{ alarm.channelName || alarm.channelId || '--' }}</span>
+              <span>{{ alarm.channel_name || alarm.channelId || '--' }}</span>
             </div>
             <div class="detail-item">
               <label>通道ID:</label>

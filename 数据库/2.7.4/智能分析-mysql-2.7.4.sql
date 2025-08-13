@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS wvp_analysis_task (
     channel_id VARCHAR(50) NOT NULL COMMENT '通道ID',
     channel_name VARCHAR(100) COMMENT '通道名称',
     rtsp_url VARCHAR(500) COMMENT 'RTSP流地址',
-    status ENUM('CREATED', 'STARTING', 'RUNNING', 'PAUSING', 'PAUSED', 'RESUMING', 'STOPPING', 'STOPPED', 'FAILED', 'ERROR') DEFAULT 'CREATED' COMMENT '任务状态',
+    status ENUM('CREATED', 'RUNNING', 'PAUSED', 'FAILED', 'CANCELLED') DEFAULT 'CREATED' COMMENT '任务状态',
     vlm_job_id VARCHAR(50) COMMENT 'VLM微服务Job ID',
     config JSON COMMENT '任务配置参数',
     error_message TEXT COMMENT '错误信息',

@@ -16,16 +16,10 @@
         style="width: 130px"
       >
         <el-option label="已创建" value="created" />
-        <el-option label="启动中" value="starting" />
         <el-option label="运行中" value="running" />
-        <el-option label="暂停中" value="pausing" />
         <el-option label="已暂停" value="paused" />
-        <el-option label="恢复中" value="resuming" />
-        <el-option label="停止中" value="stopping" />
-        <el-option label="已停止" value="stopped" />
-        <el-option label="已取消" value="cancelled" />
         <el-option label="失败" value="failed" />
-        <el-option label="错误" value="error" />
+        <el-option label="已取消" value="cancelled" />
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
@@ -54,7 +48,6 @@
       <el-table-column label="状态" min-width="100px" align="center">
         <template slot-scope="{row}">
           <el-tag :type="getStatusType(row.status)">
-            <i v-if="isTransitioning(row.status)" class="el-icon-loading" style="margin-right: 5px;"></i>
             {{ getStatusText(row.status) }}
           </el-tag>
         </template>
@@ -67,7 +60,7 @@
             size="mini" 
             @click="handleStart(row)" 
             v-if="canStart(row)"
-            :disabled="isTransitioning(row.status)"
+            :disabled="false"
           >
             启动
           </el-button>
@@ -76,7 +69,7 @@
             size="mini" 
             @click="handlePause(row)" 
             v-if="canPause(row)"
-            :disabled="isTransitioning(row.status)"
+            :disabled="false"
           >
             暂停
           </el-button>
@@ -85,7 +78,7 @@
             size="mini" 
             @click="handleResume(row)" 
             v-if="canResume(row)"
-            :disabled="isTransitioning(row.status)"
+            :disabled="false"
           >
             恢复
           </el-button>
@@ -94,7 +87,7 @@
             size="mini" 
             @click="handleCancel(row)" 
             v-if="canCancel(row)"
-            :disabled="isTransitioning(row.status)"
+            :disabled="false"
           >
             取消
           </el-button>
@@ -102,7 +95,7 @@
             type="info" 
             size="mini" 
             @click="handleEdit(row)"
-            :disabled="isTransitioning(row.status)"
+            :disabled="false"
           >
             编辑
           </el-button>
@@ -111,7 +104,7 @@
             size="mini" 
             @click="handleDelete(row)" 
             v-if="canDelete(row)"
-            :disabled="isTransitioning(row.status)"
+            :disabled="false"
           >
             删除
           </el-button>
@@ -219,7 +212,7 @@ export default {
       this.dialogVisible = true
     },
     handleDelete(row) {
-      this.$confirm(`确认删除任务"${row.taskName}"？`, '提示', {
+      this.$confirm(`确认删除任务"${row.task_name}"？`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -288,74 +281,38 @@ export default {
     },
     getStatusType(status) {
       const map = {
-        // 创建状态
-        'created': '',
-        'CREATED': '',
-        // 运行状态  
+        'created': 'info',
+        'CREATED': 'info',
         'running': 'success',
         'RUNNING': 'success',
-        // 过渡状态
-        'starting': 'warning',
-        'STARTING': 'warning',
-        'pausing': 'warning',
-        'PAUSING': 'warning',
-        'resuming': 'warning',
-        'RESUMING': 'warning',
-        'stopping': 'warning',
-        'STOPPING': 'warning',
-        // 暂停状态
-        'paused': 'info',
-        'PAUSED': 'info',
-        // 终止状态
-        'stopped': 'info',
-        'STOPPED': 'info',
-        'cancelled': 'info',
-        'CANCELLED': 'info',
-        // 错误状态
+        'paused': 'warning',
+        'PAUSED': 'warning',
         'failed': 'danger',
         'FAILED': 'danger',
-        'error': 'danger',
-        'ERROR': 'danger'
+        'cancelled': 'info',
+        'CANCELLED': 'info'
       }
       return map[status] || ''
     },
     getStatusText(status) {
       const map = {
-        // 创建状态
         'created': '已创建',
         'CREATED': '已创建',
-        // 运行状态
         'running': '运行中',
-        'RUNNING': '运行中', 
-        // 过渡状态
-        'starting': '启动中',
-        'STARTING': '启动中',
-        'pausing': '暂停中',
-        'PAUSING': '暂停中',
-        'resuming': '恢复中',
-        'RESUMING': '恢复中',
-        'stopping': '停止中',
-        'STOPPING': '停止中',
-        // 暂停状态
+        'RUNNING': '运行中',
         'paused': '已暂停',
         'PAUSED': '已暂停',
-        // 终止状态
-        'stopped': '已停止',
-        'STOPPED': '已停止',
-        'cancelled': '已取消',
-        'CANCELLED': '已取消',
-        // 错误状态  
         'failed': '失败',
         'FAILED': '失败',
-        'error': '错误',
-        'ERROR': '错误'
+        'cancelled': '已取消',
+        'CANCELLED': '已取消'
       }
       return map[status] || status
     },
     canStart(row) {
       const status = row.status ? row.status.toLowerCase() : ''
-      // 能启动的状态：已创建、已停止、已取消、失败、错误
-      return ['created', 'stopped', 'cancelled', 'failed', 'error'].includes(status)
+      // 能启动的状态：已创建
+      return status === 'created'
     },
     canPause(row) {
       const status = row.status ? row.status.toLowerCase() : ''
@@ -369,17 +326,13 @@ export default {
     },
     canCancel(row) {
       const status = row.status ? row.status.toLowerCase() : ''
-      // 能取消的状态：运行中、已暂停（不包括过渡状态）
-      return ['running', 'paused'].includes(status)
+      // 基于VLM状态机：只有非终态状态可以取消
+      return ['created', 'running', 'paused'].includes(status)
     },
     canDelete(row) {
       const status = row.status ? row.status.toLowerCase() : ''
-      // 能删除的状态：非运行和非过渡状态
-      return ['created', 'stopped', 'cancelled', 'failed', 'error'].includes(status)
-    },
-    isTransitioning(status) {
-      const transitioningStates = ['starting', 'pausing', 'resuming', 'stopping']
-      return status ? transitioningStates.includes(status.toLowerCase()) : false
+      // 基于VLM状态机：只有终态状态可以删除
+      return ['failed', 'cancelled'].includes(status)
     },
     handleCreationSuccess(taskData) {
       // 重置筛选条件，确保新建的任务能显示
@@ -409,7 +362,7 @@ export default {
       
       setTimeout(() => {
         // 获取任务当前状态
-        this.getTasks(this.listQuery).then(response => {
+        getTasks(this.listQuery).then(response => {
           const tasks = response.data.list || response.data
           const task = tasks.find(t => t.id === taskId)
           

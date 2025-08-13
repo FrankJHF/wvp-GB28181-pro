@@ -93,23 +93,11 @@ public class AnalysisTask {
     // ==================== 状态转换辅助方法 ====================
 
     /**
-     * 判断任务是否处于过渡状态
-     * @return true如果处于过渡状态
-     */
-    public boolean isTransitioning() {
-        return status != null && status.isTransitioning();
-    }
-
-    /**
      * 判断任务是否可以启动
      * @return true如果可以启动
      */
     public boolean canStart() {
-        return status == TaskStatus.CREATED || 
-               status == TaskStatus.STOPPED || 
-               status == TaskStatus.FAILED || 
-               status == TaskStatus.ERROR ||
-               status == TaskStatus.CANCELLED;
+        return status == TaskStatus.CREATED;
     }
 
     /**
@@ -129,35 +117,32 @@ public class AnalysisTask {
     }
 
     /**
-     * 判断任务是否可以停止
-     * @return true如果可以停止
+     * 判断任务是否可以取消
+     * 基于VLM状态机：只有非终态状态可以取消
+     * @return true如果可以取消
      */
-    public boolean canStop() {
-        return status == TaskStatus.RUNNING || 
-               status == TaskStatus.PAUSED || 
-               status == TaskStatus.STARTING ||
-               status == TaskStatus.PAUSING ||
-               status == TaskStatus.RESUMING;
+    public boolean canCancel() {
+        return status == TaskStatus.CREATED || 
+               status == TaskStatus.RUNNING || 
+               status == TaskStatus.PAUSED;
     }
 
     /**
      * 判断任务是否可以删除
+     * 基于VLM状态机：只有终态状态可以删除
      * @return true如果可以删除
      */
     public boolean canDelete() {
-        return status == TaskStatus.CREATED || 
-               status == TaskStatus.STOPPED || 
-               status == TaskStatus.FAILED || 
-               status == TaskStatus.ERROR ||
+        return status == TaskStatus.FAILED || 
                status == TaskStatus.CANCELLED;
     }
 
     /**
-     * 判断任务是否处于活跃状态（需要定期同步状态）
+     * 判断任务是否处于活跃状态（可以进行操作）
      * @return true如果处于活跃状态
      */
     public boolean isActive() {
-        return status != null && status.isActive();
+        return status == TaskStatus.RUNNING || status == TaskStatus.PAUSED;
     }
 
     /**
@@ -165,7 +150,7 @@ public class AnalysisTask {
      * @return true如果已终止
      */
     public boolean isTerminated() {
-        return status != null && status.isTerminated();
+        return status == TaskStatus.FAILED || status == TaskStatus.CANCELLED;
     }
 
     /**
@@ -185,8 +170,8 @@ public class AnalysisTask {
                 return canPause();
             case RESUME:
                 return canResume();
-            case STOP:
-                return canStop();
+            case CANCEL:
+                return canCancel();
             case DELETE:
                 return canDelete();
             default:
@@ -195,35 +180,11 @@ public class AnalysisTask {
     }
 
     /**
-     * 获取状态转换的目标状态
+     * 直接获取操作后的目标状态（无中间态）
      * @param action 要执行的操作
-     * @return 转换后的状态
+     * @return 目标状态
      */
-    public TaskStatus getTransitioningStatus(TaskAction action) {
-        if (action == null) {
-            return status;
-        }
-
-        switch (action) {
-            case START:
-                return TaskStatus.STARTING;
-            case PAUSE:
-                return TaskStatus.PAUSING;
-            case RESUME:
-                return TaskStatus.RESUMING;
-            case STOP:
-                return TaskStatus.STOPPING;
-            default:
-                return status;
-        }
-    }
-
-    /**
-     * 获取操作成功后的最终状态
-     * @param action 执行的操作
-     * @return 成功后的状态
-     */
-    public TaskStatus getFinalStatus(TaskAction action) {
+    public TaskStatus getTargetStatus(TaskAction action) {
         if (action == null) {
             return status;
         }
@@ -235,8 +196,8 @@ public class AnalysisTask {
                 return TaskStatus.PAUSED;
             case RESUME:
                 return TaskStatus.RUNNING;
-            case STOP:
-                return TaskStatus.STOPPED;
+            case CANCEL:
+                return TaskStatus.CANCELLED;
             default:
                 return status;
         }

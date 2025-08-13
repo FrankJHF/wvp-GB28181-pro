@@ -238,9 +238,9 @@ public class AnalysisTaskController {
             // 判断任务状态，决定是删除还是取消
             TaskStatus currentStatus = TaskStatus.fromValue(existingTask.getStatus().getValue());
             
-            if (currentStatus.isActive() || currentStatus == TaskStatus.PAUSED) {
-                // 活跃状态或暂停状态的任务：取消（使用停止实现）
-                CompletableFuture<Void> future = analysisTaskService.stopTask(taskId);
+            if (existingTask.canCancel()) {
+                // 可以取消的状态：CREATED、RUNNING、PAUSED
+                CompletableFuture<Void> future = analysisTaskService.cancelTask(taskId);
                 
                 // 等待取消操作完成
                 try {
@@ -253,8 +253,8 @@ public class AnalysisTaskController {
                 log.info("用户 {} 取消了分析任务: {}", currentUser, existingTask.getTaskName());
                 return WVPResult.success(null, "任务取消成功");
                 
-            } else {
-                // 非活跃状态的任务：删除
+            } else if (existingTask.canDelete()) {
+                // 可以删除的状态：FAILED、CANCELLED
                 boolean success = analysisTaskService.deleteTask(taskId);
                 if (!success) {
                     throw new ControllerException(ErrorCode.ERROR500.getCode(), "删除分析任务失败");
@@ -262,6 +262,10 @@ public class AnalysisTaskController {
                 
                 log.info("用户 {} 删除了分析任务: {}", currentUser, existingTask.getTaskName());
                 return WVPResult.success(null, "删除成功");
+                
+            } else {
+                throw new ControllerException(ErrorCode.ERROR400.getCode(), 
+                        String.format("任务当前状态 %s 不支持取消或删除操作", currentStatus.getDescription()));
             }
             
         } catch (ControllerException e) {

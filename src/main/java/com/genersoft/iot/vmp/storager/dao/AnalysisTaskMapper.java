@@ -137,7 +137,7 @@ public interface AnalysisTaskMapper {
             "config, error_message, last_active_time, last_status_sync, " +
             "created_by, created_at, updated_at " +
             "FROM wvp_analysis_task " +
-            "WHERE status IN ('starting', 'running', 'pausing', 'paused', 'resuming', 'stopping') " +
+            "WHERE status IN ('running', 'paused') " +
             "AND (last_status_sync IS NULL OR last_status_sync < #{beforeTime})")
     List<AnalysisTask> selectTasksNeedSync(@Param("beforeTime") LocalDateTime beforeTime);
 
@@ -214,7 +214,7 @@ public interface AnalysisTaskMapper {
             "channel_id, channel_name, rtsp_url, status, vlm_job_id, " +
             "config, error_message, last_active_time, last_status_sync, " +
             "created_by, created_at, updated_at " +
-            "FROM wvp_analysis_task WHERE status IN ('running', 'starting', 'pausing', 'paused', 'resuming') ORDER BY created_at DESC")
+            "FROM wvp_analysis_task WHERE status IN ('running', 'paused') ORDER BY created_at DESC")
     List<AnalysisTask> selectActiveTasks();
 
     /**
@@ -225,7 +225,7 @@ public interface AnalysisTaskMapper {
             "config, error_message, last_active_time, last_status_sync, " +
             "created_by, created_at, updated_at " +
             "FROM wvp_analysis_task " +
-            "WHERE status IN ('starting', 'running', 'pausing', 'paused', 'resuming', 'stopping') " +
+            "WHERE status IN ('running', 'paused') " +
             "AND (last_status_sync IS NULL OR last_status_sync < DATE_SUB(NOW(), INTERVAL #{minutes} MINUTE))")
     List<AnalysisTask> selectTasksNeedingStatusSync(@Param("minutes") int minutes);
 

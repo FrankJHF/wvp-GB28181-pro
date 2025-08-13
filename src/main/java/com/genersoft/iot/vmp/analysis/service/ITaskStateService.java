@@ -36,10 +36,20 @@ public interface ITaskStateService {
     CompletableFuture<Void> resumeTask(String taskId);
 
     /**
-     * 停止任务
+     * 取消任务
+     * 对非终态任务调用VLM DELETE接口，状态变为CANCELLED
      * @param taskId 任务ID
      * @return 异步操作结果
      */
+    CompletableFuture<Void> cancelTask(String taskId);
+
+    /**
+     * 停止任务（已弃用，请使用cancelTask）
+     * @deprecated 请使用cancelTask方法替代
+     * @param taskId 任务ID
+     * @return 异步操作结果
+     */
+    @Deprecated
     CompletableFuture<Void> stopTask(String taskId);
 
     /**

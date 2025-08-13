@@ -18,8 +18,8 @@ public enum TaskAction {
     @Schema(description = "恢复")
     RESUME("resume", "恢复"),
     
-    @Schema(description = "停止")
-    STOP("stop", "停止"),
+    @Schema(description = "取消")
+    CANCEL("cancel", "取消"),
     
     @Schema(description = "删除")
     DELETE("delete", "删除");

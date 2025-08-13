@@ -163,9 +163,9 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
             throw new ServiceException("分析任务不存在，ID: " + task.getId());
         }
 
-        // 检查任务是否可以更新（不能是正在执行的任务）
-        if (existingTask.isTransitioning()) {
-            throw new ServiceException("任务正在执行操作，无法更新");
+        // 检查任务是否可以更新（不能是活跃状态的任务）
+        if (existingTask.isActive()) {
+            throw new ServiceException("任务正在运行或暂停中，无法更新");
         }
 
         int result = analysisTaskMapper.update(task);
@@ -192,19 +192,13 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
             throw new ServiceException("分析任务不存在，ID: " + taskId);
         }
 
-        // 检查任务是否可以删除
+        // 检查任务是否可以删除（只有终态任务可以删除）
         if (!task.canDelete()) {
-            throw new ServiceException("任务状态不允许删除，请先停止任务");
+            throw new ServiceException("只能删除已失败或已取消的任务");
         }
 
-        // 取消VLM作业（如果存在）
-        if (!(task.getVlmJobId() == null || task.getVlmJobId().trim().isEmpty())) {
-            try {
-                vlmClientService.cancelJob(task.getVlmJobId());
-            } catch (Exception e) {
-                log.warn("取消VLM作业失败，继续删除任务，VLM作业ID: {}", task.getVlmJobId(), e);
-            }
-        }
+        // 对于终态任务，不调用VLM服务，直接删除数据库记录
+        // VLM的终态任务（failed/cancelled）不能执行状态转换，调用DELETE会返回409错误
 
         int result = analysisTaskMapper.delete(taskId);
         if (result <= 0) {
@@ -303,8 +297,15 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
     }
 
     @Override
+    public CompletableFuture<Void> cancelTask(String taskId) {
+        return taskStateService.cancelTask(taskId);
+    }
+
+    @Override
+    @Deprecated
     public CompletableFuture<Void> stopTask(String taskId) {
-        return taskStateService.stopTask(taskId);
+        // 为了向后兼容，委托给cancelTask
+        return cancelTask(taskId);
     }
 
     @Override

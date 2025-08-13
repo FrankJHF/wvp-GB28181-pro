@@ -17,15 +17,15 @@
       <div class="alarm-info">
         <div class="info-item">
           <span class="info-label">任务:</span>
-          <span class="info-value">{{ alarm.taskName || '--' }}</span>
+          <span class="info-value">{{ alarm.task_name || '--' }}</span>
         </div>
         <div class="info-item">
           <span class="info-label">设备:</span>
-          <span class="info-value">{{ alarm.deviceName || alarm.deviceId || '--' }}</span>
+          <span class="info-value">{{ alarm.device_name || alarm.deviceId || '--' }}</span>
         </div>
         <div class="info-item">
           <span class="info-label">通道:</span>
-          <span class="info-value">{{ alarm.channelName || alarm.channelId || '--' }}</span>
+          <span class="info-value">{{ alarm.channel_name || alarm.channelId || '--' }}</span>
         </div>
         <div class="info-item">
           <span class="info-label">分析类型:</span>

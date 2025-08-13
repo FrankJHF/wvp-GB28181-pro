@@ -84,15 +84,23 @@ public class TaskStateServiceImpl implements ITaskStateService {
 
     @Override
     @Async("taskExecutor")
-    public CompletableFuture<Void> stopTask(String taskId) {
+    public CompletableFuture<Void> cancelTask(String taskId) {
         return CompletableFuture.runAsync(() -> {
             try {
-                performTaskAction(taskId, TaskAction.STOP, false);
+                performTaskAction(taskId, TaskAction.CANCEL, false);
             } catch (ServiceException e) {
-                log.error("停止任务失败，任务ID: {}", taskId, e);
+                log.error("取消任务失败，任务ID: {}", taskId, e);
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    @Override
+    @Async("taskExecutor")
+    @Deprecated
+    public CompletableFuture<Void> stopTask(String taskId) {
+        // 为了向后兼容，委托给cancelTask
+        return cancelTask(taskId);
     }
 
     @Override
@@ -160,8 +168,8 @@ public class TaskStateServiceImpl implements ITaskStateService {
     public int syncAllActiveTaskStatuses() {
         log.debug("开始同步所有活跃任务状态");
         
-        // 查询需要同步的任务
-        List<String> activeStatuses = List.of("starting", "running", "pausing", "paused", "resuming", "stopping");
+        // 查询需要同步的任务（只查询活跃状态的任务）
+        List<String> activeStatuses = List.of("running", "paused");
         List<AnalysisTask> activeTasks = analysisTaskMapper.selectByStatuses(activeStatuses);
         
         int syncCount = 0;
@@ -226,7 +234,7 @@ public class TaskStateServiceImpl implements ITaskStateService {
     public boolean markTaskError(String taskId, String errorMessage) {
         log.warn("标记任务为错误状态，任务ID: {}, 错误信息: {}", taskId, errorMessage);
         
-        return forceUpdateTaskStatus(taskId, TaskStatus.ERROR, errorMessage);
+        return forceUpdateTaskStatus(taskId, TaskStatus.FAILED, errorMessage);
     }
 
     @Override
@@ -298,17 +306,34 @@ public class TaskStateServiceImpl implements ITaskStateService {
                         task.getStatus().getDescription(), action.getDescription()));
             }
             
-            // 检查VLM作业ID
+            // 对于取消操作，根据任务状态采用不同策略
+            if (action == TaskAction.CANCEL) {
+                // 对于CREATED和FAILED状态，直接更新为CANCELLED，不调用VLM
+                if (task.getStatus() == TaskStatus.CREATED || task.getStatus() == TaskStatus.FAILED) {
+                    TaskStatus originalStatus = task.getStatus();
+                    log.info("任务状态为{}，直接更新为CANCELLED，不调用VLM服务", originalStatus);
+                    task.setStatus(TaskStatus.CANCELLED);
+                    task.updateLastStatusSync();
+                    analysisTaskMapper.update(task);
+                    
+                    log.info("任务取消成功，任务ID: {}, 原状态: {} -> CANCELLED", taskId, originalStatus);
+                    return;
+                }
+                
+                // 对于RUNNING和PAUSED状态，需要调用VLM DELETE接口
+                if (task.getStatus() != TaskStatus.RUNNING && task.getStatus() != TaskStatus.PAUSED) {
+                    throw new ServiceException("当前状态不支持VLM取消操作: " + task.getStatus());
+                }
+            }
+            
+            // 检查VLM作业ID（非取消操作或需要调用VLM的取消操作）
             if (task.getVlmJobId() == null || task.getVlmJobId().trim().isEmpty()) {
                 throw new ServiceException("任务未关联VLM作业，无法执行操作");
             }
             
-            // 更新为过渡状态
-            TaskStatus transitioningStatus = task.getTransitioningStatus(action);
-            task.setStatus(transitioningStatus);
-            task.setErrorMessage(null); // 清除之前的错误信息
+            // 清除之前的错误信息，准备执行操作
+            task.setErrorMessage(null);
             task.updateLastActiveTime();
-            analysisTaskMapper.update(task);
             
             // 调用VLM服务
             VLMJobActionResponse response = callVlmService(task.getVlmJobId(), action, forceRestart);
@@ -322,11 +347,11 @@ public class TaskStateServiceImpl implements ITaskStateService {
                     log.info("根据VLM响应更新任务状态，任务ID: {}, VLM状态: {} -> WVP状态: {}", 
                             taskId, response.getCurrentStatus(), vlmMappedStatus.getDescription());
                 } else {
-                    // 如果无法映射VLM状态，使用预期的最终状态
-                    TaskStatus finalStatus = task.getFinalStatus(action);
-                    task.setStatus(finalStatus);
+                    // 如果无法映射VLM状态，使用预期的目标状态
+                    TaskStatus targetStatus = task.getTargetStatus(action);
+                    task.setStatus(targetStatus);
                     log.warn("无法映射VLM状态 '{}', 使用预期状态: {}", 
-                            response.getCurrentStatus(), finalStatus.getDescription());
+                            response.getCurrentStatus(), targetStatus.getDescription());
                 }
                 
                 task.updateLastStatusSync();
@@ -337,7 +362,7 @@ public class TaskStateServiceImpl implements ITaskStateService {
             } else {
                 // 操作失败，更新为错误状态
                 String errorMsg = response != null ? response.getErrorInfo() : "VLM服务调用失败";
-                task.setStatus(TaskStatus.ERROR);
+                task.setStatus(TaskStatus.FAILED);
                 task.setErrorMessage(errorMsg);
                 analysisTaskMapper.update(task);
                 
@@ -379,8 +404,8 @@ public class TaskStateServiceImpl implements ITaskStateService {
             case RESUME:
                 JobStatusUpdateRequest resumeRequest = new JobStatusUpdateRequest("resume");
                 return vlmClientService.updateJobStatus(vlmJobId, resumeRequest);
-            case STOP:
-                // 停止操作使用新的cancelJob接口，需要适配响应
+            case CANCEL:
+                // 取消操作使用cancelJob接口
                 JobCancelResponse cancelResponse = vlmClientService.cancelJob(vlmJobId);
                 // 适配为统一的VLMJobActionResponse格式
                 VLMJobActionResponse actionResponse = new VLMJobActionResponse();
@@ -395,28 +420,15 @@ public class TaskStateServiceImpl implements ITaskStateService {
     }
 
     /**
-     * 映射VLM状态到任务状态
+     * 将VLM状态映射为任务状态
+     * 直接使用VLMStatusMapper进行统一映射
      */
     private TaskStatus mapVlmStatusToTaskStatus(String vlmStatus) {
-        if (vlmStatus == null || vlmStatus.trim().isEmpty()) {
-            return TaskStatus.ERROR;
+        TaskStatus mappedStatus = VLMStatusMapper.mapVLMStatusToTaskStatus(vlmStatus);
+        if (mappedStatus == null) {
+            log.warn("无法映射VLM状态: {}，返回FAILED状态", vlmStatus);
+            return TaskStatus.FAILED;
         }
-        
-        switch (vlmStatus.toLowerCase()) {
-            case "created":
-            case "pending":
-                return TaskStatus.CREATED;
-            case "running":
-                return TaskStatus.RUNNING;
-            case "paused":
-                return TaskStatus.PAUSED;
-            case "completed":
-            case "cancelled":
-                return TaskStatus.STOPPED;
-            case "failed":
-                return TaskStatus.FAILED;
-            default:
-                return TaskStatus.ERROR;
-        }
+        return mappedStatus;
     }
 }
