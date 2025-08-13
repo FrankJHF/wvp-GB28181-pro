@@ -25,9 +25,9 @@
         class="filter-item"
         style="width: 130px"
       >
-        <el-option label="待处理" value="pending" />
-        <el-option label="已处理" value="resolved" />
-        <el-option label="已忽略" value="ignored" />
+        <el-option label="待处理" value="PENDING" />
+        <el-option label="已处理" value="RESOLVED" />
+        <el-option label="已忽略" value="IGNORED" />
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
@@ -180,9 +180,9 @@ export default {
     },
     getTimelineType(status) {
       const map = {
-        pending: 'warning',
-        resolved: 'success',
-        ignored: 'info'
+        PENDING: 'warning',
+        RESOLVED: 'success',
+        IGNORED: 'info'
       }
       return map[status] || 'primary'
     },

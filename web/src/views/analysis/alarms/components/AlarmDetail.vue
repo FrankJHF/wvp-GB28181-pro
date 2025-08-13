@@ -90,23 +90,23 @@
           </div>
 
           <div v-if="alarm.videoWindowInfo" class="detail-section">
-            <h4 class="section-title">检测区域</h4>
+            <h4 class="section-title">视频时间窗口信息</h4>
             <div class="window-info">
               <div class="window-item">
-                <label>X坐标:</label>
-                <span>{{ alarm.videoWindowInfo.x || 0 }}px</span>
+                <label>开始时间:</label>
+                <span>{{ alarm.videoWindowInfo.windowStartUtc || '--' }}</span>
               </div>
               <div class="window-item">
-                <label>Y坐标:</label>
-                <span>{{ alarm.videoWindowInfo.y || 0 }}px</span>
+                <label>结束时间:</label>
+                <span>{{ alarm.videoWindowInfo.windowEndUtc || '--' }}</span>
               </div>
               <div class="window-item">
-                <label>宽度:</label>
-                <span>{{ alarm.videoWindowInfo.width || 0 }}px</span>
+                <label>持续时长:</label>
+                <span>{{ alarm.videoWindowInfo.windowDurationSeconds || 0 }}秒</span>
               </div>
-              <div class="window-item">
-                <label>高度:</label>
-                <span>{{ alarm.videoWindowInfo.height || 0 }}px</span>
+              <div v-if="alarm.videoWindowInfo.frameRate" class="window-item">
+                <label>帧率:</label>
+                <span>{{ alarm.videoWindowInfo.frameRate }}</span>
               </div>
             </div>
           </div>
@@ -173,28 +173,28 @@ export default {
       }
     },
     canProcess() {
-      return this.alarm && this.alarm.status === 'pending'
+      return this.alarm && this.alarm.status === 'PENDING'
     },
     canIgnore() {
-      return this.alarm && this.alarm.status === 'pending'
+      return this.alarm && this.alarm.status === 'PENDING'
     }
   },
   methods: {
     getStatusTagType() {
       if (!this.alarm) return ''
       const typeMap = {
-        pending: 'danger',
-        resolved: 'success',
-        ignored: 'info'
+        PENDING: 'danger',
+        RESOLVED: 'success',
+        IGNORED: 'info'
       }
       return typeMap[this.alarm.status] || 'danger'
     },
     getStatusText() {
       if (!this.alarm) return '--'
       const textMap = {
-        pending: '待处理',
-        resolved: '已处理',
-        ignored: '已忽略'
+        PENDING: '待处理',
+        RESOLVED: '已处理',
+        IGNORED: '已忽略'
       }
       return textMap[this.alarm.status] || '未知'
     },

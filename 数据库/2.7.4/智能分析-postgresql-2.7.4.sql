@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS wvp_analysis_alarm (
     event_end_time TIMESTAMP,
     event_time_range VARCHAR(50),
     video_window_info JSONB,
-    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'resolved', 'ignored')),
+    status VARCHAR(20) DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'PROCESSING', 'RESOLVED', 'IGNORED')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 COMMENT ON TABLE wvp_analysis_alarm IS '分析告警表';

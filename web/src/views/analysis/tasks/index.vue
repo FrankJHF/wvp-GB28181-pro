@@ -15,11 +15,11 @@
         class="filter-item"
         style="width: 130px"
       >
-        <el-option label="已创建" value="created" />
-        <el-option label="运行中" value="running" />
-        <el-option label="已暂停" value="paused" />
-        <el-option label="失败" value="failed" />
-        <el-option label="已取消" value="cancelled" />
+        <el-option label="已创建" value="CREATED" />
+        <el-option label="运行中" value="RUNNING" />
+        <el-option label="已暂停" value="PAUSED" />
+        <el-option label="失败" value="FAILED" />
+        <el-option label="已取消" value="CANCELLED" />
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索

@@ -48,12 +48,12 @@
     </div>
 
     <div v-if="alarm.videoWindowInfo" class="video-window-info">
-      <div class="window-title">检测区域信息:</div>
+      <div class="window-title">视频时间窗口信息:</div>
       <div class="window-details">
-        <span>X: {{ alarm.videoWindowInfo.x || 0 }}</span>
-        <span>Y: {{ alarm.videoWindowInfo.y || 0 }}</span>
-        <span>宽: {{ alarm.videoWindowInfo.width || 0 }}</span>
-        <span>高: {{ alarm.videoWindowInfo.height || 0 }}</span>
+        <span>开始时间: {{ alarm.videoWindowInfo.windowStartUtc || '--' }}</span>
+        <span>结束时间: {{ alarm.videoWindowInfo.windowEndUtc || '--' }}</span>
+        <span>持续时长: {{ alarm.videoWindowInfo.windowDurationSeconds || 0 }}秒</span>
+        <span v-if="alarm.videoWindowInfo.frameRate">帧率: {{ alarm.videoWindowInfo.frameRate }}</span>
       </div>
     </div>
 
@@ -94,15 +94,15 @@ export default {
   },
   computed: {
     canProcess() {
-      return this.alarm.status === 'pending'
+      return this.alarm.status === 'PENDING'
     },
     canIgnore() {
-      return this.alarm.status === 'pending'
+      return this.alarm.status === 'PENDING'
     }
   },
   methods: {
     getAlarmClass() {
-      return `alarm-${this.alarm.status || 'pending'}`
+      return `alarm-${(this.alarm.status || 'PENDING').toLowerCase()}`
     },
     getAlarmIcon() {
       const typeIconMap = {
@@ -116,17 +116,17 @@ export default {
     },
     getStatusTagType() {
       const typeMap = {
-        pending: 'danger',
-        resolved: 'success',
-        ignored: 'info'
+        PENDING: 'danger',
+        RESOLVED: 'success',
+        IGNORED: 'info'
       }
       return typeMap[this.alarm.status] || 'danger'
     },
     getStatusText() {
       const textMap = {
-        pending: '待处理',
-        resolved: '已处理', 
-        ignored: '已忽略'
+        PENDING: '待处理',
+        RESOLVED: '已处理', 
+        IGNORED: '已忽略'
       }
       return textMap[this.alarm.status] || '未知'
     },
