@@ -24,7 +24,7 @@ public interface AnalysisAlarmMapper {
             "event_time_range, video_window_info, status, created_at) " +
             "VALUES (#{id}, #{taskId}, #{deviceId}, #{deviceName}, #{channelId}, #{channelName}, " +
             "#{analysisType}, #{description}, #{snapshotPath}, #{alarmTime}, #{eventStartTime}, #{eventEndTime}, " +
-            "#{eventTimeRange}, #{videoWindowInfo,typeHandler=com.genersoft.iot.vmp.utils.JsonTypeHandler}, " +
+            "#{eventTimeRange}, #{videoWindowInfo,typeHandler=com.genersoft.iot.vmp.utils.VideoWindowInfoTypeHandler}, " +
             "#{status}, #{createdAt})")
     int insert(AnalysisAlarm alarm);
 
@@ -55,12 +55,20 @@ public interface AnalysisAlarmMapper {
     /**
      * 根据ID查询告警
      */
+    @Results({
+            @Result(property = "videoWindowInfo", column = "video_window_info", 
+                    typeHandler = com.genersoft.iot.vmp.utils.VideoWindowInfoTypeHandler.class)
+    })
     @Select("SELECT * FROM wvp_analysis_alarm WHERE id = #{id}")
     AnalysisAlarm selectById(@Param("id") String id);
 
     /**
      * 根据任务ID查询告警
      */
+    @Results({
+            @Result(property = "videoWindowInfo", column = "video_window_info", 
+                    typeHandler = com.genersoft.iot.vmp.utils.VideoWindowInfoTypeHandler.class)
+    })
     @Select("SELECT * FROM wvp_analysis_alarm WHERE task_id = #{taskId} ORDER BY alarm_time DESC")
     List<AnalysisAlarm> selectByTaskId(@Param("taskId") String taskId);
 
@@ -74,6 +82,10 @@ public interface AnalysisAlarmMapper {
     /**
      * 查询告警列表（支持时间范围和条件过滤）
      */
+    @Results({
+            @Result(property = "videoWindowInfo", column = "video_window_info", 
+                    typeHandler = com.genersoft.iot.vmp.utils.VideoWindowInfoTypeHandler.class)
+    })
     @Select({" <script>" +
             "SELECT * FROM wvp_analysis_alarm " +
             "<where>" +

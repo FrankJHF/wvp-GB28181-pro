@@ -18,6 +18,7 @@ import com.genersoft.iot.vmp.gb28181.service.IDeviceChannelService;
 import com.genersoft.iot.vmp.gb28181.service.IDeviceService;
 import com.genersoft.iot.vmp.gb28181.service.IPlayService;
 import com.genersoft.iot.vmp.storager.dao.AnalysisTaskMapper;
+import com.genersoft.iot.vmp.storager.dao.AnalysisAlarmMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +47,9 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
     @Autowired
     private AnalysisTaskMapper analysisTaskMapper;
+
+    @Autowired
+    private AnalysisAlarmMapper analysisAlarmMapper;
 
     @Autowired
     private IAnalysisCardService analysisCardService;
@@ -199,6 +203,10 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
 
         // 对于终态任务，不调用VLM服务，直接删除数据库记录
         // VLM的终态任务（failed/cancelled）不能执行状态转换，调用DELETE会返回409错误
+
+        // 先删除关联的告警记录，避免外键约束冲突
+        int alarmDeleteCount = analysisAlarmMapper.deleteByTaskId(taskId);
+        log.info("删除任务关联告警数量: {}, 任务ID: {}", alarmDeleteCount, taskId);
 
         int result = analysisTaskMapper.delete(taskId);
         if (result <= 0) {

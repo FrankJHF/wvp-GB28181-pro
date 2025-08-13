@@ -166,14 +166,15 @@ public class TaskStateServiceImpl implements ITaskStateService {
 
     @Override
     public int syncAllActiveTaskStatuses() {
-        log.debug("开始同步所有活跃任务状态");
+        log.debug("开始同步需要同步的任务状态");
         
-        // 查询需要同步的任务（只查询活跃状态的任务）
-        List<String> activeStatuses = List.of("running", "paused");
-        List<AnalysisTask> activeTasks = analysisTaskMapper.selectByStatuses(activeStatuses);
+        // 查询需要同步的任务（created、running、paused状态的任务）
+        // created状态的任务可能在VLM中已经变为运行状态（特别是设置了自动启动的任务）
+        List<String> statusesToSync = List.of("created", "running", "paused");
+        List<AnalysisTask> tasksToSync = analysisTaskMapper.selectByStatuses(statusesToSync);
         
         int syncCount = 0;
-        for (AnalysisTask task : activeTasks) {
+        for (AnalysisTask task : tasksToSync) {
             try {
                 syncTaskStatus(task.getId());
                 syncCount++;
@@ -182,7 +183,7 @@ public class TaskStateServiceImpl implements ITaskStateService {
             }
         }
         
-        log.debug("活跃任务状态同步完成，同步数量: {}", syncCount);
+        log.debug("任务状态同步完成，同步数量: {}", syncCount);
         return syncCount;
     }
 
