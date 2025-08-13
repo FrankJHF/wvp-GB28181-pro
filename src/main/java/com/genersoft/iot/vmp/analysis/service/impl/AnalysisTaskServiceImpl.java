@@ -468,4 +468,22 @@ public class AnalysisTaskServiceImpl implements IAnalysisTaskService {
             throw new ServiceException("创建人不能为空");
         }
     }
+
+    @Override
+    public boolean updateLastActiveTime(String taskId) throws ServiceException {
+        if (taskId == null || taskId.trim().isEmpty()) {
+            throw new ServiceException("任务ID不能为空");
+        }
+
+        log.debug("更新任务最后活跃时间: {}", taskId);
+        
+        int result = analysisTaskMapper.updateLastActiveTime(taskId);
+        if (result <= 0) {
+            log.warn("更新任务最后活跃时间失败，任务可能不存在: {}", taskId);
+            return false;
+        }
+
+        log.debug("任务最后活跃时间更新成功: {}", taskId);
+        return true;
+    }
 }

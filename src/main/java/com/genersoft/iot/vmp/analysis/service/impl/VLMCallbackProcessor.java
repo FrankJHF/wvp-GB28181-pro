@@ -74,8 +74,7 @@ public class VLMCallbackProcessor {
             }
             
             // 更新任务最后活跃时间
-            task.updateLastActiveTime();
-            analysisTaskService.updateTask(task);
+            analysisTaskService.updateLastActiveTime(task.getId());
             
             // 处理分析事件
             if (callback.getEvents() != null && !callback.getEvents().isEmpty()) {

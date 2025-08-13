@@ -178,4 +178,11 @@ public interface IAnalysisTaskService {
      * @return 是否有效
      */
     boolean validateDeviceChannel(String deviceId, String channelId) throws ServiceException;
+
+    /**
+     * 更新任务的最后活跃时间
+     * @param taskId 任务ID
+     * @return 是否更新成功
+     */
+    boolean updateLastActiveTime(String taskId) throws ServiceException;
 }

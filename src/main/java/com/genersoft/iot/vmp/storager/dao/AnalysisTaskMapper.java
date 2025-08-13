@@ -260,4 +260,10 @@ public interface AnalysisTaskMapper {
             "created_by, created_at, updated_at " +
             "FROM wvp_analysis_task WHERE status = #{status} AND created_by = #{createdBy} ORDER BY created_at DESC")
     List<AnalysisTask> selectByStatusAndCreatedBy(@Param("status") TaskStatus status, @Param("createdBy") String createdBy);
+
+    /**
+     * 更新任务的最后活跃时间
+     */
+    @Update("UPDATE wvp_analysis_task SET last_active_time = NOW(), updated_at = NOW() WHERE id = #{taskId}")
+    int updateLastActiveTime(@Param("taskId") String taskId);
 }
