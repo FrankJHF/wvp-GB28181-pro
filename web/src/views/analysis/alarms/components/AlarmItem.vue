@@ -27,13 +27,9 @@
           <span class="info-label">通道:</span>
           <span class="info-value">{{ alarm.channel_name || alarm.channelId || '--' }}</span>
         </div>
-        <div class="info-item">
-          <span class="info-label">分析类型:</span>
-          <span class="info-value">{{ alarm.analysisType || '--' }}</span>
-        </div>
       </div>
 
-      <div v-if="alarm.snapshotPath" class="alarm-snapshot">
+      <div v-if="alarm.snapshotPath || alarm.snapshot_base64" class="alarm-snapshot">
         <el-image
           :src="getSnapshotUrl()"
           :preview-src-list="[getSnapshotUrl()]"
@@ -112,7 +108,7 @@ export default {
         'analysis': 'el-icon-pie-chart',
         'emergency_exit': 'el-icon-warning-outline'
       }
-      return typeIconMap[this.alarm.analysisType] || 'el-icon-warning'
+      return 'el-icon-warning'
     },
     getStatusTagType() {
       const typeMap = {
@@ -131,13 +127,24 @@ export default {
       return textMap[this.alarm.status] || '未知'
     },
     getSnapshotUrl() {
-      if (!this.alarm.snapshotPath) return ''
+      if (!this.alarm.snapshotPath && !this.alarm.snapshot_base64) return ''
+      
+      // 如果有base64数据，直接使用
+      if (this.alarm.snapshot_base64) {
+        return `data:image/jpeg;base64,${this.alarm.snapshot_base64}`
+      }
+      
       // 如果快照路径是完整URL，直接返回
-      if (this.alarm.snapshotPath.startsWith('http')) {
+      if (this.alarm.snapshotPath && this.alarm.snapshotPath.startsWith('http')) {
         return this.alarm.snapshotPath
       }
-      // 否则拼接静态资源路径
-      return `/api/vmanager/analysis/alarms/${this.alarm.id}/snapshot`
+      
+      // 否则使用API获取图片
+      if (this.alarm.id) {
+        return `/api/vmanager/analysis/alarms/${this.alarm.id}/snapshot`
+      }
+      
+      return ''
     },
     formatTime(timeStr) {
       if (!timeStr) return '--'

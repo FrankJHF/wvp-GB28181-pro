@@ -93,7 +93,6 @@ export default {
         endTime: null,
         deviceId: '',
         channelId: '',
-        analysisType: '',
         status: null,
         taskId: ''
       },

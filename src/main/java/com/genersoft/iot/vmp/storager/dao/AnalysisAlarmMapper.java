@@ -20,12 +20,12 @@ public interface AnalysisAlarmMapper {
      * 新增分析告警
      */
     @Insert("INSERT INTO wvp_analysis_alarm (id, task_id, device_id, device_name, channel_id, channel_name, " +
-            "analysis_type, description, snapshot_path, alarm_time, event_start_time, event_end_time, " +
-            "event_time_range, video_window_info, status, created_at) " +
+            "description, snapshot_path, snapshot_base64, alarm_time, event_start_time, event_end_time, " +
+            "event_time_range, video_window_info, status, processed_at, created_at) " +
             "VALUES (#{id}, #{taskId}, #{deviceId}, #{deviceName}, #{channelId}, #{channelName}, " +
-            "#{analysisType}, #{description}, #{snapshotPath}, #{alarmTime}, #{eventStartTime}, #{eventEndTime}, " +
+            "#{description}, #{snapshotPath}, #{snapshotBase64}, #{alarmTime}, #{eventStartTime}, #{eventEndTime}, " +
             "#{eventTimeRange}, #{videoWindowInfo,typeHandler=com.genersoft.iot.vmp.utils.VideoWindowInfoTypeHandler}, " +
-            "#{status}, #{createdAt})")
+            "#{status}, #{processedAt}, #{createdAt})")
     int insert(AnalysisAlarm alarm);
 
     /**
@@ -33,6 +33,12 @@ public interface AnalysisAlarmMapper {
      */
     @Update("UPDATE wvp_analysis_alarm SET status = #{status} WHERE id = #{id}")
     int updateStatus(@Param("id") String id, @Param("status") String status);
+
+    /**
+     * 更新告警状态和处理时间
+     */
+    @Update("UPDATE wvp_analysis_alarm SET status = #{status}, processed_at = #{processedAt} WHERE id = #{id}")
+    int updateStatusAndProcessedAt(@Param("id") String id, @Param("status") String status, @Param("processedAt") LocalDateTime processedAt);
 
     /**
      * 批量更新告警状态
@@ -61,6 +67,22 @@ public interface AnalysisAlarmMapper {
     })
     @Select("SELECT * FROM wvp_analysis_alarm WHERE id = #{id}")
     AnalysisAlarm selectById(@Param("id") String id);
+
+    /**
+     * 根据ID查询告警详情，包含关联的任务和分析卡片信息
+     */
+    @Results({
+            @Result(property = "videoWindowInfo", column = "video_window_info", 
+                    typeHandler = com.genersoft.iot.vmp.utils.VideoWindowInfoTypeHandler.class)
+    })
+    @Select("SELECT a.*, " +
+            "t.task_name, t.device_name as task_device_name, t.channel_name as task_channel_name, " +
+            "c.title as analysis_card_title " +
+            "FROM wvp_analysis_alarm a " +
+            "LEFT JOIN wvp_analysis_task t ON a.task_id = t.id " +
+            "LEFT JOIN wvp_analysis_card c ON t.analysis_card_id = c.id " +
+            "WHERE a.id = #{id}")
+    AnalysisAlarm selectByIdWithDetails(@Param("id") String id);
 
     /**
      * 根据任务ID查询告警
@@ -93,7 +115,6 @@ public interface AnalysisAlarmMapper {
             "<if test=\"endTime != null\"> AND alarm_time &lt;= #{endTime}</if>" +
             "<if test=\"deviceId != null and deviceId != ''\"> AND device_id = #{deviceId}</if>" +
             "<if test=\"channelId != null and channelId != ''\"> AND channel_id = #{channelId}</if>" +
-            "<if test=\"analysisType != null and analysisType != ''\"> AND analysis_type = #{analysisType}</if>" +
             "<if test=\"status != null and status != ''\"> AND status = #{status}</if>" +
             "<if test=\"taskId != null and taskId != ''\"> AND task_id = #{taskId}</if>" +
             "</where>" +
@@ -103,9 +124,38 @@ public interface AnalysisAlarmMapper {
                                          @Param("endTime") LocalDateTime endTime,
                                          @Param("deviceId") String deviceId,
                                          @Param("channelId") String channelId,
-                                         @Param("analysisType") String analysisType,
                                          @Param("status") String status,
                                          @Param("taskId") String taskId);
+
+    /**
+     * 查询告警列表，包含关联的任务和分析卡片信息
+     */
+    @Results({
+            @Result(property = "videoWindowInfo", column = "video_window_info", 
+                    typeHandler = com.genersoft.iot.vmp.utils.VideoWindowInfoTypeHandler.class)
+    })
+    @Select({" <script>" +
+            "SELECT a.*, " +
+            "t.task_name, c.title as analysis_card_title " +
+            "FROM wvp_analysis_alarm a " +
+            "LEFT JOIN wvp_analysis_task t ON a.task_id = t.id " +
+            "LEFT JOIN wvp_analysis_card c ON t.analysis_card_id = c.id " +
+            "<where>" +
+            "<if test=\"startTime != null\"> AND a.alarm_time &gt;= #{startTime}</if>" +
+            "<if test=\"endTime != null\"> AND a.alarm_time &lt;= #{endTime}</if>" +
+            "<if test=\"deviceId != null and deviceId != ''\"> AND a.device_id = #{deviceId}</if>" +
+            "<if test=\"channelId != null and channelId != ''\"> AND a.channel_id = #{channelId}</if>" +
+            "<if test=\"status != null and status != ''\"> AND a.status = #{status}</if>" +
+            "<if test=\"taskId != null and taskId != ''\"> AND a.task_id = #{taskId}</if>" +
+            "</where>" +
+            "ORDER BY a.alarm_time DESC" +
+            " </script>"})
+    List<AnalysisAlarm> selectByTimeRangeWithDetails(@Param("startTime") LocalDateTime startTime,
+                                                    @Param("endTime") LocalDateTime endTime,
+                                                    @Param("deviceId") String deviceId,
+                                                    @Param("channelId") String channelId,
+                                                    @Param("status") String status,
+                                                    @Param("taskId") String taskId);
 
     /**
      * 查询最近的告警
@@ -130,7 +180,6 @@ public interface AnalysisAlarmMapper {
             "<if test=\"endTime != null\"> AND alarm_time &lt;= #{endTime}</if>" +
             "<if test=\"deviceId != null and deviceId != ''\"> AND device_id = #{deviceId}</if>" +
             "<if test=\"channelId != null and channelId != ''\"> AND channel_id = #{channelId}</if>" +
-            "<if test=\"analysisType != null and analysisType != ''\"> AND analysis_type = #{analysisType}</if>" +
             "<if test=\"status != null and status != ''\"> AND status = #{status}</if>" +
             "<if test=\"taskId != null and taskId != ''\"> AND task_id = #{taskId}</if>" +
             "</where>" +
@@ -139,7 +188,6 @@ public interface AnalysisAlarmMapper {
                @Param("endTime") LocalDateTime endTime,
                @Param("deviceId") String deviceId,
                @Param("channelId") String channelId,
-               @Param("analysisType") String analysisType,
                @Param("status") String status,
                @Param("taskId") String taskId);
 

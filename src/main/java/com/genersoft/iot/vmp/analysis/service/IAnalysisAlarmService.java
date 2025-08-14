@@ -82,14 +82,13 @@ public interface IAnalysisAlarmService {
      * @param endTime 结束时间
      * @param deviceId 设备ID
      * @param channelId 通道ID
-     * @param analysisType 分析类型
      * @param status 告警状态
      * @param taskId 任务ID
      * @return 分页结果
      */
     PageInfo<AnalysisAlarm> getAlarmPage(int pageNum, int pageSize, LocalDateTime startTime, LocalDateTime endTime,
-                                        String deviceId, String channelId, String analysisType, 
-                                        String status, String taskId) throws ServiceException;
+                                        String deviceId, String channelId, String status, 
+                                        String taskId) throws ServiceException;
 
     /**
      * 查询最近的告警
@@ -110,13 +109,12 @@ public interface IAnalysisAlarmService {
      * @param endTime 结束时间
      * @param deviceId 设备ID
      * @param channelId 通道ID
-     * @param analysisType 分析类型
      * @param status 告警状态
      * @param taskId 任务ID
      * @return 告警数量
      */
     long countAlarms(LocalDateTime startTime, LocalDateTime endTime, String deviceId, String channelId,
-                    String analysisType, String status, String taskId) throws ServiceException;
+                    String status, String taskId) throws ServiceException;
 
     /**
      * 根据任务ID统计告警数量

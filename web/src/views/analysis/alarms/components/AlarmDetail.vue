@@ -36,12 +36,8 @@
               <span>{{ alarm.task_name || '--' }}</span>
             </div>
             <div class="detail-item">
-              <label>分析类型:</label>
-              <span>{{ getAnalysisTypeText() }}</span>
-            </div>
-            <div class="detail-item">
               <label>分析卡片:</label>
-              <span>{{ alarm.analysisCardTitle || '--' }}</span>
+              <span>{{ alarm.analysis_card_title || '--' }}</span>
             </div>
           </div>
 
@@ -71,7 +67,7 @@
             <h4 class="section-title">快照图片</h4>
             <div class="snapshot-container">
               <el-image
-                v-if="alarm.snapshotPath"
+                v-if="alarm.snapshotPath || alarm.snapshot_base64"
                 :src="getSnapshotUrl()"
                 :preview-src-list="[getSnapshotUrl()]"
                 class="detail-snapshot"
@@ -198,23 +194,25 @@ export default {
       }
       return textMap[this.alarm.status] || '未知'
     },
-    getAnalysisTypeText() {
-      if (!this.alarm) return '--'
-      const typeMap = {
-        'detection': '目标检测',
-        'recognition': '目标识别',
-        'tracking': '目标跟踪',
-        'analysis': '行为分析',
-        'emergency_exit': '紧急出口'
-      }
-      return typeMap[this.alarm.analysisType] || this.alarm.analysisType || '--'
-    },
     getSnapshotUrl() {
-      if (!this.alarm || !this.alarm.snapshotPath) return ''
-      if (this.alarm.snapshotPath.startsWith('http')) {
+      if (!this.alarm) return ''
+      
+      // 如果有base64数据，直接使用
+      if (this.alarm.snapshot_base64) {
+        return `data:image/jpeg;base64,${this.alarm.snapshot_base64}`
+      }
+      
+      // 如果快照路径是完整URL，直接返回
+      if (this.alarm.snapshotPath && this.alarm.snapshotPath.startsWith('http')) {
         return this.alarm.snapshotPath
       }
-      return `/api/vmanager/analysis/alarms/${this.alarm.id}/snapshot`
+      
+      // 否则使用API获取图片
+      if (this.alarm.id && this.alarm.snapshotPath) {
+        return `/api/vmanager/analysis/alarms/${this.alarm.id}/snapshot`
+      }
+      
+      return ''
     },
     formatTime(timeStr) {
       if (!timeStr) return '--'

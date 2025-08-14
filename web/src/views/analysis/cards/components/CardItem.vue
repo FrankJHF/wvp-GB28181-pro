@@ -126,7 +126,7 @@ export default {
         'tracking': 'el-icon-location',
         'analysis': 'el-icon-pie-chart'
       }
-      return typeIconMap[this.card.analysisType] || 'el-icon-star-off'
+      return 'el-icon-star-off'
     },
     formatDate(dateString) {
       if (!dateString) return '--'

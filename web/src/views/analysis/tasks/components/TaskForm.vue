@@ -53,7 +53,7 @@
           </el-option>
         </el-select>
         <div v-if="selectedCard" class="form-tip">
-          描述: {{ selectedCard.description || '无' }} | 类型: {{ selectedCard.analysisType || '无' }}
+          描述: {{ selectedCard.description || '无' }}
         </div>
       </el-form-item>
 

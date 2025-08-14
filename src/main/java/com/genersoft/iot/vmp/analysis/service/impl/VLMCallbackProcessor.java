@@ -134,11 +134,6 @@ public class VLMCallbackProcessor {
         alarm.setChannelId(task.getChannelId());
         alarm.setChannelName(task.getChannelName());
         
-        // 设置告警信息
-        if (task.getAnalysisCard() != null) {
-            alarm.setAnalysisType(task.getAnalysisCard().getTitle());
-        }
-        
         alarm.setDescription(event.getEventDescription());
         alarm.setStatus(AlarmStatus.PENDING);
         alarm.setCreatedAt(LocalDateTime.now());
@@ -219,8 +214,35 @@ public class VLMCallbackProcessor {
         }
         
         try {
-            // 解码Base64图片数据
-            byte[] imageData = Base64.getDecoder().decode(event.getSnapshotBase64());
+            // 清理base64数据，移除可能的data URL前缀
+            String base64Data = event.getSnapshotBase64().trim();
+            
+            // 检查并移除data URL前缀 (如: data:image/jpeg;base64,)
+            if (base64Data.startsWith("data:")) {
+                int commaIndex = base64Data.indexOf(",");
+                if (commaIndex != -1 && commaIndex < base64Data.length() - 1) {
+                    base64Data = base64Data.substring(commaIndex + 1);
+                    log.debug("移除data URL前缀后的base64数据长度: {}", base64Data.length());
+                } else {
+                    log.warn("base64数据格式异常，包含data:前缀但找不到逗号分隔符");
+                    return;
+                }
+            }
+            
+            // 移除base64字符串中的空白字符
+            base64Data = base64Data.replaceAll("\\s+", "");
+            
+            // 验证base64字符串的有效性
+            if (base64Data.isEmpty()) {
+                log.warn("base64数据为空");
+                return;
+            }
+            
+            // 保存清理后的base64数据到数据库
+            alarm.setSnapshotBase64(base64Data);
+            
+            // 解码Base64图片数据并保存文件
+            byte[] imageData = Base64.getDecoder().decode(base64Data);
             
             // 生成文件路径
             String fileName = String.format("snapshot_%s_%s.jpg", 
@@ -237,8 +259,15 @@ public class VLMCallbackProcessor {
             
             alarm.setSnapshotPath(filePath.toString());
             
-            log.debug("快照保存成功，告警ID: {}, 文件路径: {}", alarm.getId(), filePath);
+            log.debug("快照保存成功，告警ID: {}, 文件路径: {}, 文件大小: {} bytes, base64长度: {}", 
+                    alarm.getId(), filePath, imageData.length, base64Data.length());
             
+        } catch (IllegalArgumentException e) {
+            log.error("Base64解码失败，告警ID: {}, 原始数据长度: {}, 错误: {}", 
+                    alarm.getId(), 
+                    event.getSnapshotBase64() != null ? event.getSnapshotBase64().length() : 0,
+                    e.getMessage());
+            // 不阻断告警创建，快照保存失败时继续创建告警
         } catch (Exception e) {
             log.error("保存快照失败，告警ID: {}", alarm.getId(), e);
             // 不阻断告警创建，快照保存失败时继续创建告警

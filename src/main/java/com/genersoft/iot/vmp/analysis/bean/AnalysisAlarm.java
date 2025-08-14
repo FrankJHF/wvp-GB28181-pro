@@ -37,10 +37,6 @@ public class AnalysisAlarm {
     @JsonProperty("channel_name")
     private String channelName;
 
-    @Schema(description = "分析类型")
-    @JsonProperty("analysis_type")
-    private String analysisType;
-
     @Schema(description = "告警描述")
     private String description;
 
@@ -71,6 +67,10 @@ public class AnalysisAlarm {
     @Schema(description = "处理状态")
     private AlarmStatus status;
 
+    @Schema(description = "处理时间")
+    @JsonProperty("processed_at")
+    private LocalDateTime processedAt;
+
     @Schema(description = "创建时间")
     @JsonProperty("created_at")
     private LocalDateTime createdAt;
@@ -97,6 +97,15 @@ public class AnalysisAlarm {
     // 关联的任务信息（非数据库字段）
     @Schema(description = "关联的分析任务信息")
     private transient AnalysisTask analysisTask;
+
+    // JOIN查询返回的关联字段（非数据库字段，仅用于查询结果映射）
+    @Schema(description = "任务名称（来自关联查询）")
+    @JsonProperty("task_name")
+    private transient String taskName;
+
+    @Schema(description = "分析卡片标题（来自关联查询）")
+    @JsonProperty("analysis_card_title") 
+    private transient String analysisCardTitle;
 
     // ==================== 业务辅助方法 ====================
 

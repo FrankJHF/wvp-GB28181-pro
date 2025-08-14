@@ -257,3 +257,17 @@ export function isSnapshotExists(id) {
     method: 'get'
   })
 }
+
+// 获取告警快照图片
+export function getSnapshotImage(id) {
+  return request({
+    url: `/api/vmanager/analysis/alarms/${id}/snapshot`,
+    method: 'get',
+    responseType: 'blob'
+  })
+}
+
+// 获取快照URL（用于前端img标签直接显示）
+export function getSnapshotUrl(id) {
+  return `/api/vmanager/analysis/alarms/${id}/snapshot`
+}

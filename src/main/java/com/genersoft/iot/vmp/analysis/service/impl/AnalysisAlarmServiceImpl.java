@@ -1,9 +1,7 @@
 package com.genersoft.iot.vmp.analysis.service.impl;
 
 import com.genersoft.iot.vmp.analysis.service.IAnalysisAlarmService;
-import com.genersoft.iot.vmp.analysis.service.IAnalysisTaskService;
 import com.genersoft.iot.vmp.analysis.bean.AnalysisAlarm;
-import com.genersoft.iot.vmp.analysis.bean.AnalysisTask;
 import com.genersoft.iot.vmp.analysis.bean.AlarmStatus;
 import com.genersoft.iot.vmp.storager.dao.AnalysisAlarmMapper;
 import com.genersoft.iot.vmp.conf.exception.ServiceException;
@@ -35,9 +33,6 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Autowired
     private AnalysisAlarmMapper analysisAlarmMapper;
-
-    @Autowired
-    private IAnalysisTaskService analysisTaskService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -173,13 +168,11 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Override
     public AnalysisAlarm getAlarmWithDetailsById(String alarmId) throws ServiceException {
-        AnalysisAlarm alarm = getAlarmById(alarmId);
-        if (alarm != null) {
-            // 加载关联的任务信息
-            AnalysisTask task = analysisTaskService.getTaskWithDetailsById(alarm.getTaskId());
-            alarm.setAnalysisTask(task);
+        if (alarmId == null || alarmId.trim().isEmpty()) {
+            throw new ServiceException("告警ID不能为空");
         }
-        return alarm;
+        
+        return analysisAlarmMapper.selectByIdWithDetails(alarmId);
     }
 
     @Override
@@ -202,13 +195,13 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Override
     public PageInfo<AnalysisAlarm> getAlarmPage(int pageNum, int pageSize, LocalDateTime startTime, LocalDateTime endTime,
-                                               String deviceId, String channelId, String analysisType, 
-                                               String status, String taskId) throws ServiceException {
+                                               String deviceId, String channelId, String status, 
+                                               String taskId) throws ServiceException {
         log.debug("分页查询分析告警，页码: {}, 页面大小: {}", pageNum, pageSize);
         
         PageHelper.startPage(pageNum, pageSize);
-        List<AnalysisAlarm> alarms = analysisAlarmMapper.selectByTimeRange(startTime, endTime, deviceId, 
-                channelId, analysisType, status, taskId);
+        List<AnalysisAlarm> alarms = analysisAlarmMapper.selectByTimeRangeWithDetails(startTime, endTime, deviceId, 
+                channelId, status, taskId);
         
         return new PageInfo<>(alarms);
     }
@@ -229,8 +222,8 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
 
     @Override
     public long countAlarms(LocalDateTime startTime, LocalDateTime endTime, String deviceId, String channelId,
-                           String analysisType, String status, String taskId) throws ServiceException {
-        return analysisAlarmMapper.count(startTime, endTime, deviceId, channelId, analysisType, status, taskId);
+                           String status, String taskId) throws ServiceException {
+        return analysisAlarmMapper.count(startTime, endTime, deviceId, channelId, status, taskId);
     }
 
     @Override
@@ -333,14 +326,60 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
     @Transactional(rollbackFor = Exception.class)
     public boolean processAlarm(String alarmId) throws ServiceException {
         log.info("处理告警，告警ID: {}", alarmId);
-        return updateAlarmStatus(alarmId, AlarmStatus.RESOLVED);
+        
+        if (alarmId == null || alarmId.trim().isEmpty()) {
+            throw new ServiceException("告警ID不能为空");
+        }
+        
+        // 检查告警是否存在
+        AnalysisAlarm alarm = analysisAlarmMapper.selectById(alarmId);
+        if (alarm == null) {
+            throw new ServiceException("分析告警不存在，ID: " + alarmId);
+        }
+        
+        // 更新状态和处理时间
+        alarm.setStatus(AlarmStatus.RESOLVED);
+        alarm.setProcessedAt(LocalDateTime.now());
+        
+        int result = analysisAlarmMapper.updateStatusAndProcessedAt(alarmId, AlarmStatus.RESOLVED.getValue(), LocalDateTime.now());
+        
+        if (result > 0) {
+            log.info("告警处理成功，告警ID: {}", alarmId);
+            return true;
+        }
+        
+        log.warn("告警处理失败，告警ID: {}", alarmId);
+        return false;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean ignoreAlarm(String alarmId) throws ServiceException {
         log.info("忽略告警，告警ID: {}", alarmId);
-        return updateAlarmStatus(alarmId, AlarmStatus.IGNORED);
+        
+        if (alarmId == null || alarmId.trim().isEmpty()) {
+            throw new ServiceException("告警ID不能为空");
+        }
+        
+        // 检查告警是否存在
+        AnalysisAlarm alarm = analysisAlarmMapper.selectById(alarmId);
+        if (alarm == null) {
+            throw new ServiceException("分析告警不存在，ID: " + alarmId);
+        }
+        
+        // 更新状态和处理时间
+        alarm.setStatus(AlarmStatus.IGNORED);
+        alarm.setProcessedAt(LocalDateTime.now());
+        
+        int result = analysisAlarmMapper.updateStatusAndProcessedAt(alarmId, AlarmStatus.IGNORED.getValue(), LocalDateTime.now());
+        
+        if (result > 0) {
+            log.info("告警忽略成功，告警ID: {}", alarmId);
+            return true;
+        }
+        
+        log.warn("告警忽略失败，告警ID: {}", alarmId);
+        return false;
     }
 
     @Override
@@ -350,8 +389,8 @@ public class AnalysisAlarmServiceImpl implements IAnalysisAlarmService {
             // TODO: 集成邮件服务发送邮件通知
             // TODO: 集成短信服务发送短信通知
             
-            log.info("发送告警通知，告警ID: {}, 类型: {}, 设备: {}, 通道: {}", 
-                    alarm.getId(), alarm.getAnalysisType(), alarm.getDeviceId(), alarm.getChannelId());
+            log.info("发送告警通知，告警ID: {}, 设备: {}, 通道: {}", 
+                    alarm.getId(), alarm.getDeviceId(), alarm.getChannelId());
                     
         } catch (Exception e) {
             log.error("发送告警通知失败，告警ID: {}", alarm.getId(), e);

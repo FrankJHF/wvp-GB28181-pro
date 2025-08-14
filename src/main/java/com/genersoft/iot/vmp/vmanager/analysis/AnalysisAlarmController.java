@@ -19,14 +19,22 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * 分析告警管理控制器
@@ -61,8 +69,6 @@ public class AnalysisAlarmController {
             @RequestParam(required = false) String deviceId,
             @Parameter(name = "channelId", description = "通道ID") 
             @RequestParam(required = false) String channelId,
-            @Parameter(name = "analysisType", description = "分析类型") 
-            @RequestParam(required = false) String analysisType,
             @Parameter(name = "status", description = "告警状态") 
             @RequestParam(required = false) String status,
             @Parameter(name = "taskId", description = "任务ID") 
@@ -70,7 +76,7 @@ public class AnalysisAlarmController {
         
         try {
             PageInfo<AnalysisAlarm> pageResult = analysisAlarmService.getAlarmPage(
-                    page, count, startTime, endTime, deviceId, channelId, analysisType, status, taskId);
+                    page, count, startTime, endTime, deviceId, channelId, status, taskId);
             
             return WVPResult.success(pageResult, "查询成功");
         } catch (Exception e) {
@@ -360,8 +366,6 @@ public class AnalysisAlarmController {
             @RequestParam(required = false) String deviceId,
             @Parameter(name = "channelId", description = "通道ID") 
             @RequestParam(required = false) String channelId,
-            @Parameter(name = "analysisType", description = "分析类型") 
-            @RequestParam(required = false) String analysisType,
             @Parameter(name = "status", description = "告警状态") 
             @RequestParam(required = false) String status,
             @Parameter(name = "taskId", description = "任务ID") 
@@ -369,7 +373,7 @@ public class AnalysisAlarmController {
         
         try {
             long count = analysisAlarmService.countAlarms(startTime, endTime, deviceId, channelId, 
-                    analysisType, status, taskId);
+                    status, taskId);
             return WVPResult.success(count, "统计成功");
         } catch (Exception e) {
             log.error("统计告警数量失败", e);
@@ -419,6 +423,60 @@ public class AnalysisAlarmController {
             log.error("检查快照存在性失败，告警ID: {}", alarmId, e);
             throw new ControllerException(ErrorCode.ERROR500.getCode(), 
                     "检查快照存在性失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取告警快照图片
+     */
+    @GetMapping("/api/vmanager/analysis/alarms/{alarmId}/snapshot")
+    @Operation(summary = "获取告警快照图片", security = @SecurityRequirement(name = JwtUtils.HEADER))
+    public ResponseEntity<Resource> getSnapshot(
+            @Parameter(name = "alarmId", description = "告警ID", required = true) 
+            @PathVariable String alarmId) {
+        
+        if ((alarmId == null || alarmId.trim().isEmpty())) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        try {
+            // 获取快照路径
+            String snapshotPath = analysisAlarmService.getSnapshotPath(alarmId);
+            if (snapshotPath == null || snapshotPath.trim().isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            // 检查文件是否存在
+            Path imagePath = Paths.get(snapshotPath);
+            if (!Files.exists(imagePath) || !Files.isRegularFile(imagePath)) {
+                log.warn("快照文件不存在或不是有效文件: {}", snapshotPath);
+                return ResponseEntity.notFound().build();
+            }
+            
+            // 确定媒体类型
+            MediaType mediaType;
+            String fileName = imagePath.getFileName().toString().toLowerCase();
+            if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
+                mediaType = MediaType.IMAGE_JPEG;
+            } else if (fileName.endsWith(".png")) {
+                mediaType = MediaType.IMAGE_PNG;
+            } else if (fileName.endsWith(".gif")) {
+                mediaType = MediaType.IMAGE_GIF;
+            } else {
+                mediaType = MediaType.APPLICATION_OCTET_STREAM;
+            }
+            
+            // 创建资源
+            Resource resource = new FileSystemResource(imagePath);
+            
+            return ResponseEntity.ok()
+                    .contentType(mediaType)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
+                    .body(resource);
+                    
+        } catch (Exception e) {
+            log.error("获取告警快照失败，告警ID: {}", alarmId, e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
